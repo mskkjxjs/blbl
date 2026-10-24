@@ -481,6 +481,10 @@ class AppPrefs(context: Context) {
                     normalizePlayerShortSeekStepSeconds(value),
                 ).apply()
 
+    var playerDoubleTapPauseEnabled: Boolean
+        get() = prefs.getBoolean(KEY_PLAYER_DOUBLE_TAP_PAUSE_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_PLAYER_DOUBLE_TAP_PAUSE_ENABLED, value).apply()
+
     var playerHoldSeekSpeed: Float
         get() {
             val v = prefs.getFloat(KEY_PLAYER_HOLD_SEEK_SPEED, PLAYER_HOLD_SEEK_SPEED_DEFAULT)
@@ -1109,6 +1113,7 @@ class AppPrefs(context: Context) {
         private const val KEY_SUBTITLE_BACKGROUND_OPACITY = "subtitle_background_opacity"
         private const val KEY_PLAYER_SPEED = "player_speed"
         private const val KEY_PLAYER_SHORT_SEEK_STEP_SECONDS = "player_short_seek_step_seconds"
+        private const val KEY_PLAYER_DOUBLE_TAP_PAUSE_ENABLED = "player_double_tap_pause_enabled"
         private const val KEY_PLAYER_HOLD_SEEK_SPEED = "player_hold_seek_speed"
         private const val KEY_PLAYER_HOLD_SEEK_MODE = "player_hold_seek_mode"
         private const val KEY_PLAYER_HOLD_SCRUB_TRAVERSE_SECONDS = "player_hold_scrub_traverse_seconds"

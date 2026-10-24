@@ -53,6 +53,10 @@ internal data class PlayerTouchSeekSnapshot(
     val bufferedPositionMs: Long,
 )
 
+internal fun shouldTogglePlayPauseOnDoubleTap(direction: Int, pauseOnEdgeDoubleTap: Boolean): Boolean {
+    return direction == 0 || pauseOnEdgeDoubleTap
+}
+
 internal interface PlayerTouchGestureHost {
     val activity: Activity
     val binding: ActivityPlayerBinding
@@ -275,7 +279,9 @@ internal class PlayerTouchController(
                     val width = gestureLayerWidth()
                     if (width <= 0f) return true
                     val dir = edgeDirection(e.x, width)
-                    if (dir == 0) {
+                    if (shouldTogglePlayPauseOnDoubleTap(dir, BiliClient.prefs.playerDoubleTapPauseEnabled)) {
+                        host.seekDelegate?.tapSeekActiveDirection = 0
+                        host.seekDelegate?.tapSeekActiveUntilMs = 0L
                         host.togglePlayPauseFromTouch()
                         return true
                     }
@@ -306,7 +312,11 @@ internal class PlayerTouchController(
                     val now = android.os.SystemClock.uptimeMillis()
                     val width = gestureLayerWidth()
                     val seekDelegate = host.seekDelegate
-                    if (seekDelegate != null && width > 0f && now <= seekDelegate.tapSeekActiveUntilMs) {
+                    if (!BiliClient.prefs.playerDoubleTapPauseEnabled &&
+                        seekDelegate != null &&
+                        width > 0f &&
+                        now <= seekDelegate.tapSeekActiveUntilMs
+                    ) {
                         val dir = edgeDirection(e.x, width)
                         if (dir != 0 && dir == seekDelegate.tapSeekActiveDirection) {
                             seekDelegate.smartSeekFromTouch(dir)

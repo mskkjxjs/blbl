@@ -342,6 +342,12 @@ class SettingsRenderer(
                         null,
                     ),
                     SettingEntry(
+                        SettingId.PlayerDoubleTapPauseEnabled,
+                        "双击左右区域暂停",
+                        if (prefs.playerDoubleTapPauseEnabled) "开" else "关",
+                        "开启后，双击屏幕任意区域切换播放/暂停",
+                    ),
+                    SettingEntry(
                         SettingId.PlayerHoldSeekSpeed,
                         "长按快进倍率",
                         String.format(java.util.Locale.US, "%.2fx", prefs.playerHoldSeekSpeed),

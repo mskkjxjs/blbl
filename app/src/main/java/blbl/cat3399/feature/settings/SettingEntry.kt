@@ -49,6 +49,7 @@ enum class SettingId(
     LiveHighBitrateEnabled("live_high_bitrate_enabled"),
     PlayerSpeed("player_speed"),
     PlayerShortSeekStepSeconds("player_short_seek_step_seconds"),
+    PlayerDoubleTapPauseEnabled("player_double_tap_pause_enabled"),
     PlayerHoldSeekSpeed("player_hold_seek_speed"),
     PlayerHoldSeekMode("player_hold_seek_mode"),
     PlayerHoldScrubTraverseSeconds("player_hold_scrub_traverse_seconds"),
