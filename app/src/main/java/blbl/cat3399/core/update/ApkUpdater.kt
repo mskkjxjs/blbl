@@ -26,11 +26,10 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
 object ApkUpdater {
-    private const val DEBUG_APK_URL = "https://cat3399.top/blbl/blbl-latest-debug.apk"
-    private const val RELEASE_APK_URL = "https://cat3399.top/blbl/blbl-latest-release.apk"
-    private const val CHANGELOG_URL = "https://cat3399.top/blbl/CHANGELOG.md"
+    private const val RELEASE_DOWNLOAD_BASE_URL = "https://github.com/mskkjxjs/blbl/releases/download"
+    private const val CHANGELOG_URL = "https://raw.githubusercontent.com/mskkjxjs/blbl/main/CHANGELOG.md"
     val TEST_APK_URL: String
-        get() = if (BuildConfig.DEBUG) DEBUG_APK_URL else RELEASE_APK_URL
+        get() = apkUrlFor(BuildConfig.VERSION_NAME)
     val TEST_CHANGELOG_URL: String
         get() = CHANGELOG_URL
 
@@ -179,7 +178,7 @@ object ApkUpdater {
     fun apkUrlFor(versionName: String): String {
         val cleanVersion = versionName.trim().removePrefix("v")
         val channel = if (BuildConfig.DEBUG) "debug" else "release"
-        return "https://cat3399.top/blbl/blbl-$cleanVersion-$channel.apk"
+        return "$RELEASE_DOWNLOAD_BASE_URL/v$cleanVersion/blbl-android-$cleanVersion-$channel.apk"
     }
 
     private data class VersionHeading(

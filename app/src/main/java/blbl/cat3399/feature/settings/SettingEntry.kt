@@ -50,7 +50,9 @@ enum class SettingId(
     PlayerSpeed("player_speed"),
     PlayerShortSeekStepSeconds("player_short_seek_step_seconds"),
     PlayerDoubleTapPauseEnabled("player_double_tap_pause_enabled"),
+    PlayerPersistentCommentsButtonEnabled("player_persistent_comments_button_enabled"),
     PlayerHoldSeekSpeed("player_hold_seek_speed"),
+    PlayerBoostHintEnabled("player_boost_hint_enabled"),
     PlayerHoldSeekMode("player_hold_seek_mode"),
     PlayerHoldScrubTraverseSeconds("player_hold_scrub_traverse_seconds"),
     PlayerHoldScrubFixedStepSeconds("player_hold_scrub_fixed_step_seconds"),
@@ -82,6 +84,12 @@ enum class SettingId(
     PlayerPersistentBottomProgressEnabled("player_persistent_bottom_progress_enabled"),
     PlayerPersistentClockEnabled("player_persistent_clock_enabled"),
     PlayerTouchGesturesEnabled("player_touch_gestures_enabled"),
+    PlayerLeftEdgeLongPressBoostEnabled("player_left_edge_long_press_boost_enabled"),
+    PlayerLeftVerticalSwipeAction("player_left_vertical_swipe_action"),
+    PlayerRightVerticalSwipeAction("player_right_vertical_swipe_action"),
+    PlayerCommentsDoubleTapEnabled("player_comments_double_tap_enabled"),
+    PlayerCommentsLongPressEnabled("player_comments_long_press_enabled"),
+    PlayerCommentsSwipeEnabled("player_comments_swipe_enabled"),
     PlayerVideoShotPreviewSize("player_videoshot_preview_size"),
 
     // 弹幕设置

@@ -102,6 +102,7 @@
     <string name="player_list_tab_recommend">推荐</string>
     <string name="player_list_empty">暂无内容</string>
     <string name="player_btn_comments">评论</string>
+    <string name="player_btn_close_comments">关闭评论区</string>
     <string name="player_btn_detail">视频详情页</string>
     <string name="player_btn_sponsor_submit">上传广告片段</string>
     <string name="player_btn_close_player">关闭播放器</string>

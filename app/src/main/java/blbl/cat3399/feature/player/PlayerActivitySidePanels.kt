@@ -45,6 +45,9 @@ internal fun PlayerActivity.onLastOverlayPanelDismissed() {
 internal fun PlayerActivity.initSidePanels() {
     val imageViews = binding.videoCommentImageViewerContent()
     val commentViews = binding.videoCommentsPanelContent()
+    commentViews.btnCloseComments.setOnClickListener {
+        hideCommentsPanel()
+    }
     videoCommentImageViewerController =
         VideoCommentImageViewerController(
             views =

@@ -348,10 +348,22 @@ class SettingsRenderer(
                         "开启后，双击屏幕任意区域切换播放/暂停",
                     ),
                     SettingEntry(
+                        SettingId.PlayerPersistentCommentsButtonEnabled,
+                        "常驻评论按钮",
+                        if (prefs.playerPersistentCommentsButtonEnabled) "开" else "关",
+                        "播放菜单隐藏时，在屏幕左下角显示评论入口",
+                    ),
+                    SettingEntry(
                         SettingId.PlayerHoldSeekSpeed,
                         "长按快进倍率",
                         String.format(java.util.Locale.US, "%.2fx", prefs.playerHoldSeekSpeed),
                         null,
+                    ),
+                    SettingEntry(
+                        SettingId.PlayerBoostHintEnabled,
+                        "倍速播放提示",
+                        if (prefs.playerBoostHintEnabled) "开" else "关",
+                        "关闭后，长按倍速播放时不显示倍速提示",
                     ),
                     SettingEntry(SettingId.PlayerHoldSeekMode, "长按快进模式", SettingsText.holdSeekModeText(prefs.playerHoldSeekMode), null),
                     SettingEntry(
@@ -441,6 +453,42 @@ class SettingsRenderer(
                         "触摸手势",
                         if (prefs.playerTouchGesturesEnabled) "开" else "关",
                         null,
+                    ),
+                    SettingEntry(
+                        SettingId.PlayerLeftEdgeLongPressBoostEnabled,
+                        "左侧长按倍速",
+                        if (prefs.playerLeftEdgeLongPressBoostEnabled) "开" else "关",
+                        "开启后，长按屏幕左侧边缘按设定倍速播放",
+                    ),
+                    SettingEntry(
+                        SettingId.PlayerLeftVerticalSwipeAction,
+                        "左侧上下滑动",
+                        SettingsText.playerVerticalSwipeActionText(prefs.playerLeftVerticalSwipeAction),
+                        null,
+                    ),
+                    SettingEntry(
+                        SettingId.PlayerRightVerticalSwipeAction,
+                        "右侧上下滑动",
+                        SettingsText.playerVerticalSwipeActionText(prefs.playerRightVerticalSwipeAction),
+                        null,
+                    ),
+                    SettingEntry(
+                        SettingId.PlayerCommentsDoubleTapEnabled,
+                        "评论区打开时双击",
+                        if (prefs.playerCommentsDoubleTapEnabled) "开" else "关",
+                        "允许双击快退/快进或切换播放/暂停",
+                    ),
+                    SettingEntry(
+                        SettingId.PlayerCommentsLongPressEnabled,
+                        "评论区打开时长按",
+                        if (prefs.playerCommentsLongPressEnabled) "开" else "关",
+                        "允许使用长按倍速等手势",
+                    ),
+                    SettingEntry(
+                        SettingId.PlayerCommentsSwipeEnabled,
+                        "评论区打开时滑动",
+                        if (prefs.playerCommentsSwipeEnabled) "开" else "关",
+                        "允许拖动进度、调节亮度和音量",
                     ),
                     SettingEntry(
                         SettingId.PlayerVideoShotPreviewSize,

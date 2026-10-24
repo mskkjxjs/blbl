@@ -129,7 +129,7 @@ class AppPrefs(context: Context) {
         set(value) = prefs.edit().putBoolean(KEY_DYNAMIC_FOLLOWING_RECENT_UPDATE_DOT_ENABLED, value).apply()
 
     var autoUpdateCheckEnabled: Boolean
-        get() = prefs.getBoolean(KEY_AUTO_UPDATE_CHECK_ENABLED, true)
+        get() = prefs.getBoolean(KEY_AUTO_UPDATE_CHECK_ENABLED, false)
         set(value) = prefs.edit().putBoolean(KEY_AUTO_UPDATE_CHECK_ENABLED, value).apply()
 
     var autoUpdateIgnoredVersionName: String?
@@ -485,6 +485,22 @@ class AppPrefs(context: Context) {
         get() = prefs.getBoolean(KEY_PLAYER_DOUBLE_TAP_PAUSE_ENABLED, false)
         set(value) = prefs.edit().putBoolean(KEY_PLAYER_DOUBLE_TAP_PAUSE_ENABLED, value).apply()
 
+    var playerPersistentCommentsButtonEnabled: Boolean
+        get() = prefs.getBoolean(KEY_PLAYER_PERSISTENT_COMMENTS_BUTTON_ENABLED, true)
+        set(value) = prefs.edit().putBoolean(KEY_PLAYER_PERSISTENT_COMMENTS_BUTTON_ENABLED, value).apply()
+
+    var playerCommentsDoubleTapEnabled: Boolean
+        get() = prefs.getBoolean(KEY_PLAYER_COMMENTS_DOUBLE_TAP_ENABLED, true)
+        set(value) = prefs.edit().putBoolean(KEY_PLAYER_COMMENTS_DOUBLE_TAP_ENABLED, value).apply()
+
+    var playerCommentsLongPressEnabled: Boolean
+        get() = prefs.getBoolean(KEY_PLAYER_COMMENTS_LONG_PRESS_ENABLED, true)
+        set(value) = prefs.edit().putBoolean(KEY_PLAYER_COMMENTS_LONG_PRESS_ENABLED, value).apply()
+
+    var playerCommentsSwipeEnabled: Boolean
+        get() = prefs.getBoolean(KEY_PLAYER_COMMENTS_SWIPE_ENABLED, true)
+        set(value) = prefs.edit().putBoolean(KEY_PLAYER_COMMENTS_SWIPE_ENABLED, value).apply()
+
     var playerHoldSeekSpeed: Float
         get() {
             val v = prefs.getFloat(KEY_PLAYER_HOLD_SEEK_SPEED, PLAYER_HOLD_SEEK_SPEED_DEFAULT)
@@ -492,6 +508,10 @@ class AppPrefs(context: Context) {
             return v.coerceIn(1.5f, 4.0f)
         }
         set(value) = prefs.edit().putFloat(KEY_PLAYER_HOLD_SEEK_SPEED, value.coerceIn(1.5f, 4.0f)).apply()
+
+    var playerBoostHintEnabled: Boolean
+        get() = prefs.getBoolean(KEY_PLAYER_BOOST_HINT_ENABLED, true)
+        set(value) = prefs.edit().putBoolean(KEY_PLAYER_BOOST_HINT_ENABLED, value).apply()
 
     var playerHoldSeekMode: String
         get() {
@@ -747,6 +767,36 @@ class AppPrefs(context: Context) {
             return prefs.getBoolean(KEY_PLAYER_TOUCH_GESTURES_ENABLED, defaultPlayerTouchGesturesEnabled)
         }
         set(value) = prefs.edit().putBoolean(KEY_PLAYER_TOUCH_GESTURES_ENABLED, value).apply()
+
+    var playerLeftEdgeLongPressBoostEnabled: Boolean
+        get() = prefs.getBoolean(KEY_PLAYER_LEFT_EDGE_LONG_PRESS_BOOST_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_PLAYER_LEFT_EDGE_LONG_PRESS_BOOST_ENABLED, value).apply()
+
+    var playerLeftVerticalSwipeAction: String
+        get() =
+            normalizePlayerVerticalSwipeAction(
+                prefs.getString(KEY_PLAYER_LEFT_VERTICAL_SWIPE_ACTION, null),
+                PLAYER_VERTICAL_SWIPE_ACTION_BRIGHTNESS,
+            )
+        set(value) =
+            prefs.edit()
+                .putString(
+                    KEY_PLAYER_LEFT_VERTICAL_SWIPE_ACTION,
+                    normalizePlayerVerticalSwipeAction(value, PLAYER_VERTICAL_SWIPE_ACTION_BRIGHTNESS),
+                ).apply()
+
+    var playerRightVerticalSwipeAction: String
+        get() =
+            normalizePlayerVerticalSwipeAction(
+                prefs.getString(KEY_PLAYER_RIGHT_VERTICAL_SWIPE_ACTION, null),
+                PLAYER_VERTICAL_SWIPE_ACTION_VOLUME,
+            )
+        set(value) =
+            prefs.edit()
+                .putString(
+                    KEY_PLAYER_RIGHT_VERTICAL_SWIPE_ACTION,
+                    normalizePlayerVerticalSwipeAction(value, PLAYER_VERTICAL_SWIPE_ACTION_VOLUME),
+                ).apply()
 
     var playerVideoShotPreviewSize: String
         get() {
@@ -1114,7 +1164,12 @@ class AppPrefs(context: Context) {
         private const val KEY_PLAYER_SPEED = "player_speed"
         private const val KEY_PLAYER_SHORT_SEEK_STEP_SECONDS = "player_short_seek_step_seconds"
         private const val KEY_PLAYER_DOUBLE_TAP_PAUSE_ENABLED = "player_double_tap_pause_enabled"
+        private const val KEY_PLAYER_PERSISTENT_COMMENTS_BUTTON_ENABLED = "player_persistent_comments_button_enabled"
+        private const val KEY_PLAYER_COMMENTS_DOUBLE_TAP_ENABLED = "player_comments_double_tap_enabled"
+        private const val KEY_PLAYER_COMMENTS_LONG_PRESS_ENABLED = "player_comments_long_press_enabled"
+        private const val KEY_PLAYER_COMMENTS_SWIPE_ENABLED = "player_comments_swipe_enabled"
         private const val KEY_PLAYER_HOLD_SEEK_SPEED = "player_hold_seek_speed"
+        private const val KEY_PLAYER_BOOST_HINT_ENABLED = "player_boost_hint_enabled"
         private const val KEY_PLAYER_HOLD_SEEK_MODE = "player_hold_seek_mode"
         private const val KEY_PLAYER_HOLD_SCRUB_TRAVERSE_SECONDS = "player_hold_scrub_traverse_seconds"
         private const val KEY_PLAYER_HOLD_SCRUB_FIXED_STEP_SECONDS = "player_hold_scrub_fixed_step_seconds"
@@ -1137,6 +1192,9 @@ class AppPrefs(context: Context) {
         private const val KEY_PLAYER_PERSISTENT_BOTTOM_PROGRESS = "player_persistent_bottom_progress"
         private const val KEY_PLAYER_PERSISTENT_CLOCK = "player_persistent_clock"
         private const val KEY_PLAYER_TOUCH_GESTURES_ENABLED = "player_touch_gestures_enabled"
+        private const val KEY_PLAYER_LEFT_EDGE_LONG_PRESS_BOOST_ENABLED = "player_left_edge_long_press_boost_enabled"
+        private const val KEY_PLAYER_LEFT_VERTICAL_SWIPE_ACTION = "player_left_vertical_swipe_action"
+        private const val KEY_PLAYER_RIGHT_VERTICAL_SWIPE_ACTION = "player_right_vertical_swipe_action"
         private const val KEY_PLAYER_VIDEOSHOT_PREVIEW_SIZE = "player_videoshot_preview_size"
         private const val KEY_PLAYER_AUDIO_BALANCE_LEVEL = "player_audio_balance_level"
         private const val KEY_PLAYER_PLAYBACK_MODE = "player_playback_mode"
@@ -1238,6 +1296,15 @@ class AppPrefs(context: Context) {
             }
         }
 
+        fun normalizePlayerVerticalSwipeAction(value: String?, defaultValue: String): String {
+            return when (value?.trim()) {
+                PLAYER_VERTICAL_SWIPE_ACTION_BRIGHTNESS -> PLAYER_VERTICAL_SWIPE_ACTION_BRIGHTNESS
+                PLAYER_VERTICAL_SWIPE_ACTION_VOLUME -> PLAYER_VERTICAL_SWIPE_ACTION_VOLUME
+                PLAYER_VERTICAL_SWIPE_ACTION_NONE -> PLAYER_VERTICAL_SWIPE_ACTION_NONE
+                else -> defaultValue
+            }
+        }
+
         const val DANMAKU_FONT_WEIGHT_NORMAL = "normal"
         const val DANMAKU_FONT_WEIGHT_BOLD = "bold"
 
@@ -1272,6 +1339,9 @@ class AppPrefs(context: Context) {
         const val PLAYER_HOLD_SEEK_MODE_SPEED = "speed"
         const val PLAYER_HOLD_SEEK_MODE_SCRUB = "scrub"
         const val PLAYER_HOLD_SEEK_MODE_SCRUB_FIXED_TIME = "scrub_fixed_time"
+        const val PLAYER_VERTICAL_SWIPE_ACTION_BRIGHTNESS = "brightness"
+        const val PLAYER_VERTICAL_SWIPE_ACTION_VOLUME = "volume"
+        const val PLAYER_VERTICAL_SWIPE_ACTION_NONE = "none"
         const val PLAYER_HOLD_SEEK_SPEED_DEFAULT = 3.0f
         val PLAYER_HOLD_SCRUB_SECONDS_OPTIONS: Set<Int> = linkedSetOf(5, 8, 10, 12, 15, 17, 20, 22, 25, 27, 30)
         const val PLAYER_HOLD_SCRUB_SECONDS_DEFAULT = 10

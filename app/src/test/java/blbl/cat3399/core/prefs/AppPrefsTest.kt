@@ -42,4 +42,24 @@ class AppPrefsTest {
         assertEquals(0.6f, AppPrefs.normalizeDanmakuArea(0.55f), 0.0001f)
         assertEquals(1.0f, AppPrefs.normalizeDanmakuArea(Float.NaN), 0.0001f)
     }
+
+    @Test
+    fun normalizePlayerVerticalSwipeAction_should_accept_supported_values() {
+        assertEquals(
+            AppPrefs.PLAYER_VERTICAL_SWIPE_ACTION_BRIGHTNESS,
+            AppPrefs.normalizePlayerVerticalSwipeAction(" brightness ", AppPrefs.PLAYER_VERTICAL_SWIPE_ACTION_VOLUME),
+        )
+        assertEquals(
+            AppPrefs.PLAYER_VERTICAL_SWIPE_ACTION_NONE,
+            AppPrefs.normalizePlayerVerticalSwipeAction("none", AppPrefs.PLAYER_VERTICAL_SWIPE_ACTION_BRIGHTNESS),
+        )
+    }
+
+    @Test
+    fun normalizePlayerVerticalSwipeAction_should_use_side_default_for_unknown_values() {
+        assertEquals(
+            AppPrefs.PLAYER_VERTICAL_SWIPE_ACTION_VOLUME,
+            AppPrefs.normalizePlayerVerticalSwipeAction("unknown", AppPrefs.PLAYER_VERTICAL_SWIPE_ACTION_VOLUME),
+        )
+    }
 }

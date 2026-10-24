@@ -1275,6 +1275,11 @@ class SettingsInteractionHandler(
                 renderer.refreshSection(entry.id)
             }
 
+            SettingId.PlayerPersistentCommentsButtonEnabled -> {
+                prefs.playerPersistentCommentsButtonEnabled = !prefs.playerPersistentCommentsButtonEnabled
+                renderer.refreshSection(entry.id)
+            }
+
             SettingId.PlayerHoldSeekSpeed -> {
                 val options = listOf(1.5f, 2.0f, 3.0f, 4.0f)
                 showChoiceDialog(
@@ -1286,6 +1291,11 @@ class SettingsInteractionHandler(
                     if (v != null) prefs.playerHoldSeekSpeed = v.coerceIn(1.5f, 4.0f)
                     renderer.refreshSection(entry.id)
                 }
+            }
+
+            SettingId.PlayerBoostHintEnabled -> {
+                prefs.playerBoostHintEnabled = !prefs.playerBoostHintEnabled
+                renderer.refreshSection(entry.id)
             }
 
             SettingId.PlayerHoldSeekMode -> {
@@ -1537,6 +1547,53 @@ class SettingsInteractionHandler(
             SettingId.PlayerTouchGesturesEnabled -> {
                 prefs.playerTouchGesturesEnabled = !prefs.playerTouchGesturesEnabled
                 AppToast.show(activity, "触摸手势：${if (prefs.playerTouchGesturesEnabled) "开" else "关"}")
+                renderer.refreshSection(entry.id)
+            }
+
+            SettingId.PlayerLeftEdgeLongPressBoostEnabled -> {
+                prefs.playerLeftEdgeLongPressBoostEnabled = !prefs.playerLeftEdgeLongPressBoostEnabled
+                renderer.refreshSection(entry.id)
+            }
+
+            SettingId.PlayerLeftVerticalSwipeAction,
+            SettingId.PlayerRightVerticalSwipeAction,
+            -> {
+                val isLeft = entry.id == SettingId.PlayerLeftVerticalSwipeAction
+                val currentAction =
+                    if (isLeft) prefs.playerLeftVerticalSwipeAction else prefs.playerRightVerticalSwipeAction
+                val options =
+                    listOf(
+                        AppPrefs.PLAYER_VERTICAL_SWIPE_ACTION_BRIGHTNESS to "亮度",
+                        AppPrefs.PLAYER_VERTICAL_SWIPE_ACTION_VOLUME to "声音",
+                        AppPrefs.PLAYER_VERTICAL_SWIPE_ACTION_NONE to "无行为",
+                    )
+                showChoiceDialog(
+                    title = if (isLeft) "左侧上下滑动" else "右侧上下滑动",
+                    items = options.map { it.second },
+                    current = SettingsText.playerVerticalSwipeActionText(currentAction),
+                ) { selected ->
+                    val value = options.firstOrNull { it.second == selected }?.first ?: currentAction
+                    if (isLeft) {
+                        prefs.playerLeftVerticalSwipeAction = value
+                    } else {
+                        prefs.playerRightVerticalSwipeAction = value
+                    }
+                    renderer.refreshSection(entry.id)
+                }
+            }
+
+            SettingId.PlayerCommentsDoubleTapEnabled -> {
+                prefs.playerCommentsDoubleTapEnabled = !prefs.playerCommentsDoubleTapEnabled
+                renderer.refreshSection(entry.id)
+            }
+
+            SettingId.PlayerCommentsLongPressEnabled -> {
+                prefs.playerCommentsLongPressEnabled = !prefs.playerCommentsLongPressEnabled
+                renderer.refreshSection(entry.id)
+            }
+
+            SettingId.PlayerCommentsSwipeEnabled -> {
+                prefs.playerCommentsSwipeEnabled = !prefs.playerCommentsSwipeEnabled
                 renderer.refreshSection(entry.id)
             }
 

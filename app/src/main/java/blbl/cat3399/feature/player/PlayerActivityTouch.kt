@@ -13,6 +13,7 @@ import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import blbl.cat3399.R
 import blbl.cat3399.core.net.BiliClient
+import blbl.cat3399.core.prefs.AppPrefs
 import blbl.cat3399.databinding.ActivityPlayerBinding
 import blbl.cat3399.databinding.ViewPlayerTouchOverlayBinding
 import blbl.cat3399.feature.player.engine.BlblPlayerEngine
@@ -57,6 +58,43 @@ internal fun shouldTogglePlayPauseOnDoubleTap(direction: Int, pauseOnEdgeDoubleT
     return direction == 0 || pauseOnEdgeDoubleTap
 }
 
+internal fun shouldCloseSidePanelOnSingleTap(isSidePanelVisible: Boolean, isCommentsPanelVisible: Boolean): Boolean {
+    return isSidePanelVisible && !isCommentsPanelVisible
+}
+
+internal fun shouldBlockGestureForSidePanel(
+    isSidePanelVisible: Boolean,
+    isCommentsPanelVisible: Boolean,
+    commentsGestureEnabled: Boolean,
+): Boolean {
+    return isSidePanelVisible && (!isCommentsPanelVisible || !commentsGestureEnabled)
+}
+
+internal fun shouldStartEdgeLongPressBoost(
+    x: Float,
+    width: Float,
+    edgeThreshold: Float,
+    leftEdgeEnabled: Boolean,
+): Boolean {
+    if (width <= 0f) return false
+    return x >= width * (1f - edgeThreshold) || (leftEdgeEnabled && x <= width * edgeThreshold)
+}
+
+internal fun playerVerticalSwipeActionForPosition(
+    x: Float,
+    width: Float,
+    sideThreshold: Float,
+    leftAction: String,
+    rightAction: String,
+): String? {
+    if (width <= 0f) return null
+    return when {
+        x <= width * sideThreshold -> leftAction
+        x >= width * (1f - sideThreshold) -> rightAction
+        else -> null
+    }
+}
+
 internal interface PlayerTouchGestureHost {
     val activity: Activity
     val binding: ActivityPlayerBinding
@@ -64,11 +102,17 @@ internal interface PlayerTouchGestureHost {
     val player: BlblPlayerEngine?
     val controlsVisibleForTouch: Boolean
     val isSidePanelVisible: Boolean
+    val isCommentsPanelVisible: Boolean
+        get() = false
     val isBottomCardPanelVisible: Boolean
     val isCommentImageViewerVisible: Boolean
+    val isSponsorSubmitPanelVisible: Boolean
+        get() = false
     val seekDelegate: PlayerTouchSeekDelegate?
         get() = null
     val boostDelegate: PlayerTouchBoostDelegate?
+        get() = null
+    val commentsDelegate: PlayerTouchCommentsDelegate?
         get() = null
 
     fun setControlsVisibleFromTouch(visible: Boolean)
@@ -95,9 +139,13 @@ internal interface PlayerTouchBoostDelegate {
     fun touchBoostSpeedText(speed: Float): String
 }
 
+internal interface PlayerTouchCommentsDelegate {
+    fun toggleCommentsPanelFromTouch()
+}
+
 private class VodPlayerTouchHost(
     private val playerActivity: PlayerActivity,
-) : PlayerTouchGestureHost, PlayerTouchSeekDelegate, PlayerTouchBoostDelegate {
+) : PlayerTouchGestureHost, PlayerTouchSeekDelegate, PlayerTouchBoostDelegate, PlayerTouchCommentsDelegate {
     override val activity: Activity
         get() = playerActivity
     override val binding: ActivityPlayerBinding
@@ -110,13 +158,19 @@ private class VodPlayerTouchHost(
         get() = playerActivity.osdMode == PlayerActivity.OsdMode.Full
     override val isSidePanelVisible: Boolean
         get() = playerActivity.isSidePanelVisible()
+    override val isCommentsPanelVisible: Boolean
+        get() = playerActivity.isCommentsPanelVisible()
     override val isBottomCardPanelVisible: Boolean
         get() = playerActivity.isBottomCardPanelVisible()
     override val isCommentImageViewerVisible: Boolean
         get() = playerActivity.isCommentImageViewerVisible()
+    override val isSponsorSubmitPanelVisible: Boolean
+        get() = playerActivity.isSponsorSubmitPanelVisible()
     override val seekDelegate: PlayerTouchSeekDelegate
         get() = this
     override val boostDelegate: PlayerTouchBoostDelegate
+        get() = this
+    override val commentsDelegate: PlayerTouchCommentsDelegate
         get() = this
 
     override var tapSeekActiveDirection: Int
@@ -135,6 +189,10 @@ private class VodPlayerTouchHost(
     }
 
     override fun closeSidePanelFromTouch(): Boolean = playerActivity.onSidePanelBackPressed()
+
+    override fun toggleCommentsPanelFromTouch() {
+        playerActivity.toggleCommentsPanel()
+    }
 
     override fun togglePlayPauseFromTouch() {
         binding.btnPlayPause.performClick()
@@ -275,7 +333,15 @@ internal class PlayerTouchController(
 
                 override fun onDoubleTap(e: MotionEvent): Boolean {
                     if (tapSuppressed || boostActive || gestureMode != TouchGestureMode.None) return true
-                    if (host.isSidePanelVisible) return true
+                    if (
+                        shouldBlockGestureForSidePanel(
+                            isSidePanelVisible = host.isSidePanelVisible,
+                            isCommentsPanelVisible = host.isCommentsPanelVisible,
+                            commentsGestureEnabled = BiliClient.prefs.playerCommentsDoubleTapEnabled,
+                        )
+                    ) {
+                        return true
+                    }
                     val width = gestureLayerWidth()
                     if (width <= 0f) return true
                     val dir = edgeDirection(e.x, width)
@@ -303,7 +369,10 @@ internal class PlayerTouchController(
                         toggleLockedButtonVisibility()
                         return true
                     }
-                    if (host.isSidePanelVisible) return host.closeSidePanelFromTouch()
+                    if (shouldCloseSidePanelOnSingleTap(host.isSidePanelVisible, host.isCommentsPanelVisible)) {
+                        return host.closeSidePanelFromTouch()
+                    }
+                    if (host.isCommentsPanelVisible) return true
                     if (host.controlsVisibleForTouch) {
                         host.setControlsVisibleFromTouch(false)
                         return true
@@ -338,7 +407,7 @@ internal class PlayerTouchController(
     private var downY = 0f
     private var lastX = 0f
     private var lastY = 0f
-    private var pendingRightEdgeBoostJob: Job? = null
+    private var pendingEdgeBoostJob: Job? = null
     private var boostActive = false
     private var boostPrevSpeed = 1.0f
     private var boostPrevPlayWhenReady = false
@@ -364,6 +433,9 @@ internal class PlayerTouchController(
                 lockTouch()
             }
         }
+        overlayBinding.btnTouchComments.setOnClickListener {
+            host.commentsDelegate?.toggleCommentsPanelFromTouch()
+        }
         updateLockUi()
     }
 
@@ -378,8 +450,8 @@ internal class PlayerTouchController(
     }
 
     fun onStop() {
-        pendingRightEdgeBoostJob?.cancel()
-        pendingRightEdgeBoostJob = null
+        pendingEdgeBoostJob?.cancel()
+        pendingEdgeBoostJob = null
         finishActiveGesture(commitSeek = false)
         stopBoostPlayback()
         pointerDown = false
@@ -394,6 +466,8 @@ internal class PlayerTouchController(
         overlayBinding.touchGestureLayer.visibility = View.GONE
         overlayBinding.btnTouchLock.setOnClickListener(null)
         overlayBinding.btnTouchLock.visibility = View.GONE
+        overlayBinding.btnTouchComments.setOnClickListener(null)
+        overlayBinding.btnTouchComments.visibility = View.GONE
         overlayBinding.root.visibility = View.GONE
     }
 
@@ -412,12 +486,20 @@ internal class PlayerTouchController(
         val detectorHandled = tapDetector.onTouchEvent(event)
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                if (!host.isSidePanelVisible) scheduleRightEdgeBoostIfNeeded()
+                if (
+                    !shouldBlockGestureForSidePanel(
+                        isSidePanelVisible = host.isSidePanelVisible,
+                        isCommentsPanelVisible = host.isCommentsPanelVisible,
+                        commentsGestureEnabled = BiliClient.prefs.playerCommentsLongPressEnabled,
+                    )
+                ) {
+                    scheduleEdgeBoostIfNeeded()
+                }
             }
 
             MotionEvent.ACTION_POINTER_DOWN -> {
                 tapSuppressed = true
-                pendingRightEdgeBoostJob?.cancel()
+                pendingEdgeBoostJob?.cancel()
                 finishActiveGesture(commitSeek = false)
                 stopBoostPlayback()
                 gestureMode = TouchGestureMode.Blocked
@@ -482,7 +564,7 @@ internal class PlayerTouchController(
                 height = gestureLayerHeight(),
                 edgeRatio = PlayerActivity.TOUCH_GESTURE_EXCLUDED_EDGE_RATIO,
             )
-        pendingRightEdgeBoostJob?.cancel()
+        pendingEdgeBoostJob?.cancel()
     }
 
     private fun handleMove(event: MotionEvent) {
@@ -491,11 +573,17 @@ internal class PlayerTouchController(
 
         if (boostActive) return
 
-        if (host.isSidePanelVisible) {
+        if (
+            shouldBlockGestureForSidePanel(
+                isSidePanelVisible = host.isSidePanelVisible,
+                isCommentsPanelVisible = host.isCommentsPanelVisible,
+                commentsGestureEnabled = BiliClient.prefs.playerCommentsSwipeEnabled,
+            )
+        ) {
             if (!tapSuppressed && hasExceededTouchSlop(event.x, event.y)) {
                 tapSuppressed = true
             }
-            pendingRightEdgeBoostJob?.cancel()
+            pendingEdgeBoostJob?.cancel()
             return
         }
 
@@ -504,7 +592,7 @@ internal class PlayerTouchController(
         val absDx = abs(dx)
         val absDy = abs(dy)
         if (absDx > touchSlopPx || absDy > touchSlopPx) {
-            pendingRightEdgeBoostJob?.cancel()
+            pendingEdgeBoostJob?.cancel()
             tapSuppressed = true
         }
 
@@ -532,15 +620,31 @@ internal class PlayerTouchController(
                 }
 
                 val width = gestureLayerWidth().coerceAtLeast(1f)
-                val sideThreshold = PlayerActivity.TOUCH_GESTURE_SIDE_VERTICAL_THRESHOLD
-                val verticalGestureEligible = downX <= width * sideThreshold || downX >= width * (1f - sideThreshold)
-                if (verticalGestureEligible && absDy >= verticalActivationThresholdPx && absDy >= absDx * directionRatio) {
-                    if (downX <= width * sideThreshold) {
-                        startBrightnessGesture()
-                        updateBrightnessGesture(event.y)
-                    } else {
-                        startVolumeGesture()
-                        updateVolumeGesture(event.y)
+                val verticalSwipeAction =
+                    playerVerticalSwipeActionForPosition(
+                        x = downX,
+                        width = width,
+                        sideThreshold = PlayerActivity.TOUCH_GESTURE_SIDE_VERTICAL_THRESHOLD,
+                        leftAction = BiliClient.prefs.playerLeftVerticalSwipeAction,
+                        rightAction = BiliClient.prefs.playerRightVerticalSwipeAction,
+                    )
+                if (
+                    verticalSwipeAction != null &&
+                    absDy >= verticalActivationThresholdPx &&
+                    absDy >= absDx * directionRatio
+                ) {
+                    when (verticalSwipeAction) {
+                        AppPrefs.PLAYER_VERTICAL_SWIPE_ACTION_BRIGHTNESS -> {
+                            startBrightnessGesture()
+                            updateBrightnessGesture(event.y)
+                        }
+
+                        AppPrefs.PLAYER_VERTICAL_SWIPE_ACTION_VOLUME -> {
+                            startVolumeGesture()
+                            updateVolumeGesture(event.y)
+                        }
+
+                        else -> gestureMode = TouchGestureMode.Blocked
                     }
                     return
                 }
@@ -554,8 +658,8 @@ internal class PlayerTouchController(
 
     private fun finishTouch(cancelled: Boolean) {
         pointerDown = false
-        pendingRightEdgeBoostJob?.cancel()
-        pendingRightEdgeBoostJob = null
+        pendingEdgeBoostJob?.cancel()
+        pendingEdgeBoostJob = null
 
         if (boostActive) {
             stopBoostPlayback()
@@ -664,14 +768,20 @@ internal class PlayerTouchController(
         host.showTouchHint(activity.getString(R.string.player_touch_volume_fmt, percent), hold = true)
     }
 
-    private fun scheduleRightEdgeBoostIfNeeded() {
+    private fun scheduleEdgeBoostIfNeeded() {
         if (host.boostDelegate == null) return
-        val width = gestureLayerWidth()
-        if (width <= 0f) return
-        val threshold = PlayerActivity.TOUCH_GESTURE_EDGE_LONG_PRESS_THRESHOLD
-        if (downX < width * (1f - threshold)) return
-        pendingRightEdgeBoostJob?.cancel()
-        pendingRightEdgeBoostJob =
+        if (
+            !shouldStartEdgeLongPressBoost(
+                x = downX,
+                width = gestureLayerWidth(),
+                edgeThreshold = PlayerActivity.TOUCH_GESTURE_EDGE_LONG_PRESS_THRESHOLD,
+                leftEdgeEnabled = BiliClient.prefs.playerLeftEdgeLongPressBoostEnabled,
+            )
+        ) {
+            return
+        }
+        pendingEdgeBoostJob?.cancel()
+        pendingEdgeBoostJob =
             host.lifecycleScope.launch {
                 delay(longPressTimeoutMs)
                 if (!pointerDown || tapSuppressed || gestureMode != TouchGestureMode.None || boostActive) return@launch
@@ -691,10 +801,12 @@ internal class PlayerTouchController(
         engine.setPlaybackSpeed(speed)
         engine.playWhenReady = true
         host.noteUserInteractionFromTouch()
-        host.showTouchHint(
-            activity.getString(R.string.player_touch_boost_fmt, boostDelegate.touchBoostSpeedText(speed)),
-            hold = true,
-        )
+        if (BiliClient.prefs.playerBoostHintEnabled) {
+            host.showTouchHint(
+                activity.getString(R.string.player_touch_boost_fmt, boostDelegate.touchBoostSpeedText(speed)),
+                hold = true,
+            )
+        }
         overlayBinding.touchGestureLayer.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
     }
 
@@ -714,7 +826,7 @@ internal class PlayerTouchController(
             return
         }
         touchLocked = true
-        pendingRightEdgeBoostJob?.cancel()
+        pendingEdgeBoostJob?.cancel()
         finishActiveGesture(commitSeek = false)
         stopBoostPlayback()
         host.setControlsVisibleFromTouch(false)
@@ -774,6 +886,25 @@ internal class PlayerTouchController(
         overlayBinding.btnTouchLock.contentDescription =
             activity.getString(
                 if (touchLocked) R.string.player_touch_unlock else R.string.player_touch_lock,
+            )
+        updatePersistentCommentsButton()
+    }
+
+    private fun updatePersistentCommentsButton() {
+        val commentsVisible = host.isCommentsPanelVisible
+        val visible =
+            BiliClient.prefs.playerPersistentCommentsButtonEnabled &&
+                host.commentsDelegate != null &&
+                !touchLocked &&
+                !host.controlsVisibleForTouch &&
+                !host.isBottomCardPanelVisible &&
+                !host.isCommentImageViewerVisible &&
+                !host.isSponsorSubmitPanelVisible &&
+                (!host.isSidePanelVisible || commentsVisible)
+        overlayBinding.btnTouchComments.visibility = if (visible) View.VISIBLE else View.GONE
+        overlayBinding.btnTouchComments.contentDescription =
+            activity.getString(
+                if (commentsVisible) R.string.player_btn_close_comments else R.string.player_btn_comments,
             )
     }
 

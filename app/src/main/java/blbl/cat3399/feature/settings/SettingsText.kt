@@ -215,6 +215,13 @@ object SettingsText {
             else -> "中"
         }
 
+    fun playerVerticalSwipeActionText(code: String): String =
+        when (code) {
+            blbl.cat3399.core.prefs.AppPrefs.PLAYER_VERTICAL_SWIPE_ACTION_BRIGHTNESS -> "亮度"
+            blbl.cat3399.core.prefs.AppPrefs.PLAYER_VERTICAL_SWIPE_ACTION_VOLUME -> "声音"
+            else -> "无行为"
+        }
+
     fun playerStyleTitle(): String = "播放器样式"
 
     fun playerStyleText(code: String): String =

@@ -46,4 +46,12 @@ class ApkUpdaterChangelogTest {
         assertEquals("0.3.1", update.versionName)
         assertTrue(update.changelog.contains("新版本"))
     }
+
+    @Test
+    fun apkUrlFor_should_use_project_release_asset() {
+        assertEquals(
+            "https://github.com/mskkjxjs/blbl/releases/download/v0.3.1/blbl-android-0.3.1-debug.apk",
+            ApkUpdater.apkUrlFor(" v0.3.1 "),
+        )
+    }
 }

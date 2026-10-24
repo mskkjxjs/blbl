@@ -167,6 +167,7 @@
     <dimen name="player_touch_lock_button_size">48dp</dimen>
     <dimen name="player_touch_lock_button_padding">8dp</dimen>
     <dimen name="player_touch_lock_margin_start">18dp</dimen>
+    <dimen name="player_touch_comments_margin_bottom">18dp</dimen>
     <dimen name="player_buffering_padding_h">20dp</dimen>
     <dimen name="player_buffering_padding_v">16dp</dimen>
     <dimen name="player_buffering_indicator_size">40dp</dimen>

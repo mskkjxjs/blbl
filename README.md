@@ -2,6 +2,9 @@
 
 一个第三方哔哩哔哩安卓 App，支持触摸、遥控，以及安卓5，适用于平板、TV、车机等设备。
 
+原项目已停止更新，本仓库现为独立维护的主项目。
+
+项目地址：https://github.com/mskkjxjs/blbl
 
 ## 界面预览
 
@@ -66,8 +69,9 @@
 ./gradlew assembleRelease -PversionName=0.1.1 -PversionCode=2
 ```
 
-## 临时更新方案
-**目前在代码中内置了国内环境可直接访问的直链,用于在测试阶段方便的覆盖更新,待后续稳定之后将会移除**,介意者请从release中下载action编译的安装包
+## 更新
+
+应用内更新使用本仓库的更新日志与 Release 安装包。也可以前往 [Releases](https://github.com/mskkjxjs/blbl/releases) 下载由 GitHub Actions 构建的安装包。
 
 ## GitHub Actions
 
