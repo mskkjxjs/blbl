@@ -230,7 +230,7 @@ internal object PlayerCustomShortcutCatalog {
             PlayerCustomShortcutAction.TYPE_SET_SUBTITLE_TEXT_SIZE -> {
                 val options = (10..60 step 2).toList()
                 val current = (currentAction as? PlayerCustomShortcutAction.SetSubtitleTextSize)?.textSizeSp
-                val checked = options.indices.minByOrNull { idx -> abs(options[idx].toFloat() - (current ?: 26f)) } ?: 0
+                val checked = options.indices.minByOrNull { idx -> abs(options[idx].toFloat() - (current ?: AppPrefs.SUBTITLE_TEXT_SIZE_SP_DEFAULT)) } ?: 0
                 PlayerCustomShortcutValuePickerConfig(
                     choices = options.map { PlayerCustomShortcutValueChoice(it.toString(), PlayerCustomShortcutAction.SetSubtitleTextSize(textSizeSp = it.toFloat())) },
                     checkedIndex = checked,
@@ -250,7 +250,7 @@ internal object PlayerCustomShortcutCatalog {
             PlayerCustomShortcutAction.TYPE_SET_DANMAKU_TEXT_SIZE -> {
                 val options = (10..60 step 2).toList()
                 val current = (currentAction as? PlayerCustomShortcutAction.SetDanmakuTextSize)?.textSizeSp
-                val checked = options.indices.minByOrNull { idx -> abs(options[idx].toFloat() - (current ?: 18f)) } ?: 0
+                val checked = options.indices.minByOrNull { idx -> abs(options[idx].toFloat() - (current ?: AppPrefs.DANMAKU_TEXT_SIZE_SP_DEFAULT)) } ?: 0
                 PlayerCustomShortcutValuePickerConfig(
                     choices = options.map { PlayerCustomShortcutValueChoice(it.toString(), PlayerCustomShortcutAction.SetDanmakuTextSize(textSizeSp = it.toFloat())) },
                     checkedIndex = checked,

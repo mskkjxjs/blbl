@@ -333,7 +333,7 @@ private fun PlayerActivity.applyPlayerCustomShortcut(keyCode: Int, action: Playe
         }
 
         is PlayerCustomShortcutAction.SetSubtitleTextSize -> {
-            val target = action.textSizeSp.takeIf { it.isFinite() }?.coerceIn(10f, 60f) ?: 26f
+            val target = action.textSizeSp.takeIf { it.isFinite() }?.coerceIn(10f, 60f) ?: AppPrefs.SUBTITLE_TEXT_SIZE_SP_DEFAULT
             val current = session.subtitleTextSizeSp
             val next =
                 if (sameFloat(current, target)) {
@@ -371,7 +371,7 @@ private fun PlayerActivity.applyPlayerCustomShortcut(keyCode: Int, action: Playe
         }
 
         is PlayerCustomShortcutAction.SetDanmakuTextSize -> {
-            val target = action.textSizeSp.takeIf { it.isFinite() }?.coerceIn(10f, 60f) ?: 18f
+            val target = action.textSizeSp.takeIf { it.isFinite() }?.coerceIn(10f, 60f) ?: AppPrefs.DANMAKU_TEXT_SIZE_SP_DEFAULT
             val current = session.danmaku.textSizeSp
             val next =
                 if (sameFloat(current, target)) {

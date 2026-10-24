@@ -230,11 +230,19 @@ private class VodPlayerTouchHost(
     }
 
     override fun showTouchSeekPreview(posMs: Long, durationMs: Long, bufferedPositionMs: Long) {
-        playerActivity.showSeekOsd(
-            posMs = posMs,
-            durationMs = durationMs,
-            bufferedPosMs = bufferedPositionMs,
-        )
+        if (playerActivity.isCommentsPanelVisible()) {
+            playerActivity.showCommentsTouchSeekProgress(
+                posMs = posMs,
+                durationMs = durationMs,
+                bufferedPosMs = bufferedPositionMs,
+            )
+        } else {
+            playerActivity.showSeekOsd(
+                posMs = posMs,
+                durationMs = durationMs,
+                bufferedPosMs = bufferedPositionMs,
+            )
+        }
     }
 
     override fun finishTouchSeek(targetMs: Long, durationMs: Long, commit: Boolean) {
@@ -245,14 +253,18 @@ private class VodPlayerTouchHost(
             engine.seekTo(targetMs)
             playerActivity.requestDanmakuSegmentsForPosition(targetMs, immediate = true)
             playerActivity.requestReportProgressOnce(reason = "user_seek_end")
-            playerActivity.showSeekOsd(
+            showTouchSeekPreview(
                 posMs = targetMs,
                 durationMs = durationMs,
-                bufferedPosMs = engine.bufferedPosition.coerceAtLeast(0L),
+                bufferedPositionMs = engine.bufferedPosition.coerceAtLeast(0L),
             )
             playerActivity.scheduleHideVideoShotPreviewAfterSeek()
         } else if (!commit) {
-            playerActivity.showSeekOsd()
+            if (playerActivity.isCommentsPanelVisible()) {
+                playerActivity.hideCommentsTouchSeekProgress()
+            } else {
+                playerActivity.showSeekOsd()
+            }
         }
         playerActivity.restartAutoHideTimer()
     }

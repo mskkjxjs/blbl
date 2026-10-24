@@ -231,7 +231,7 @@ class AppPrefs(context: Context) {
         set(value) = prefs.edit().putFloat(KEY_DANMAKU_OPACITY, value).apply()
 
     var danmakuTextSizeSp: Float
-        get() = prefs.getFloat(KEY_DANMAKU_TEXT_SIZE_SP, 18f)
+        get() = prefs.getFloat(KEY_DANMAKU_TEXT_SIZE_SP, DANMAKU_TEXT_SIZE_SP_DEFAULT)
         set(value) = prefs.edit().putFloat(KEY_DANMAKU_TEXT_SIZE_SP, value).apply()
 
     var danmakuLaneDensity: String
@@ -434,12 +434,12 @@ class AppPrefs(context: Context) {
 
     var subtitleTextSizeSp: Float
         get() {
-            val v = prefs.getFloat(KEY_SUBTITLE_TEXT_SIZE_SP, 26f)
-            if (!v.isFinite()) return 26f
+            val v = prefs.getFloat(KEY_SUBTITLE_TEXT_SIZE_SP, SUBTITLE_TEXT_SIZE_SP_DEFAULT)
+            if (!v.isFinite()) return SUBTITLE_TEXT_SIZE_SP_DEFAULT
             return v.coerceIn(10f, 60f)
         }
         set(value) {
-            val v = if (value.isFinite()) value.coerceIn(10f, 60f) else 26f
+            val v = if (value.isFinite()) value.coerceIn(10f, 60f) else SUBTITLE_TEXT_SIZE_SP_DEFAULT
             prefs.edit().putFloat(KEY_SUBTITLE_TEXT_SIZE_SP, v).apply()
         }
 
@@ -956,6 +956,12 @@ class AppPrefs(context: Context) {
         searchHistory = searchHistory.filterNot { it.equals(target, ignoreCase = true) }
     }
 
+    fun restoreDefaultSettings() {
+        val editor = prefs.edit()
+        NORMAL_SETTING_KEYS.forEach { editor.remove(it) }
+        editor.apply()
+    }
+
     fun exportConfigSnapshotJson(): JSONObject =
         SharedPreferencesSnapshot.encode(
             prefs = prefs,
@@ -1222,6 +1228,103 @@ class AppPrefs(context: Context) {
                 KEY_SPONSOR_BLOCK_PRIVATE_USER_ID,
             )
 
+        private val NORMAL_SETTING_KEYS: Set<String> =
+            setOf(
+                KEY_SIDEBAR_SIZE,
+                KEY_UI_SCALE_FACTOR,
+                KEY_THEME_PRESET,
+                KEY_STARTUP_PAGE,
+                KEY_CUSTOM_PAGE_CONFIG,
+                KEY_MAIN_HOME_VISIBLE_TABS,
+                KEY_MAIN_CATEGORY_VISIBLE_TABS,
+                KEY_MAIN_LIVE_VISIBLE_TABS,
+                KEY_MAIN_MY_VISIBLE_TABS,
+                KEY_FOLLOWING_LIST_ORDER,
+                KEY_DYNAMIC_FOLLOWING_RECENT_UPDATE_DOT_ENABLED,
+                KEY_AUTO_UPDATE_CHECK_ENABLED,
+                KEY_UA,
+                KEY_API_SOURCE,
+                KEY_IPV4_ONLY_ENABLED,
+                KEY_IMAGE_QUALITY,
+                KEY_DANMAKU_ENABLED,
+                KEY_DANMAKU_ALLOW_TOP,
+                KEY_DANMAKU_ALLOW_BOTTOM,
+                KEY_DANMAKU_ALLOW_SCROLL,
+                KEY_DANMAKU_ALLOW_COLOR,
+                KEY_DANMAKU_ALLOW_SPECIAL,
+                KEY_DANMAKU_AI_ENABLED,
+                KEY_DANMAKU_AI_LEVEL,
+                KEY_DANMAKU_FOLLOW_BILI_SHIELD,
+                KEY_DANMAKU_SHOW_HIGH_LIKE_ICON,
+                KEY_DANMAKU_OPACITY,
+                KEY_DANMAKU_TEXT_SIZE_SP,
+                KEY_DANMAKU_LANE_DENSITY,
+                KEY_DANMAKU_STROKE_WIDTH_PX,
+                KEY_DANMAKU_FONT_WEIGHT,
+                KEY_DANMAKU_SPEED,
+                KEY_DANMAKU_AREA,
+                KEY_PLAYER_PREFERRED_QN,
+                KEY_PLAYER_PREFERRED_QN_PGC,
+                KEY_PLAYER_PREFERRED_QN_PORTRAIT,
+                KEY_PLAYER_CODEC,
+                KEY_PLAYER_SEAMLESS_QUALITY_SWITCH_ENABLED,
+                KEY_PLAYER_RENDER_VIEW,
+                KEY_PLAYER_ENGINE_KIND,
+                KEY_PLAYER_STYLE,
+                KEY_PLAYER_AUDIO_ID,
+                KEY_PLAYER_CDN_PREFERENCE,
+                KEY_LIVE_HIGH_BITRATE_ENABLED,
+                KEY_SUBTITLE_LANG,
+                KEY_SUBTITLE_ENABLED_DEFAULT,
+                KEY_SUBTITLE_TEXT_SIZE_SP,
+                KEY_SUBTITLE_BOTTOM_PADDING_FRACTION,
+                KEY_SUBTITLE_BACKGROUND_OPACITY,
+                KEY_PLAYER_SPEED,
+                KEY_PLAYER_SHORT_SEEK_STEP_SECONDS,
+                KEY_PLAYER_DOUBLE_TAP_PAUSE_ENABLED,
+                KEY_PLAYER_PERSISTENT_COMMENTS_BUTTON_ENABLED,
+                KEY_PLAYER_COMMENTS_DOUBLE_TAP_ENABLED,
+                KEY_PLAYER_COMMENTS_LONG_PRESS_ENABLED,
+                KEY_PLAYER_COMMENTS_SWIPE_ENABLED,
+                KEY_PLAYER_HOLD_SEEK_SPEED,
+                KEY_PLAYER_BOOST_HINT_ENABLED,
+                KEY_PLAYER_HOLD_SEEK_MODE,
+                KEY_PLAYER_HOLD_SCRUB_TRAVERSE_SECONDS,
+                KEY_PLAYER_HOLD_SCRUB_FIXED_STEP_SECONDS,
+                KEY_PLAYER_AUTO_RESUME_ENABLED,
+                KEY_PLAYER_AUTO_SKIP_SEGMENTS_ENABLED,
+                KEY_PLAYER_AUTO_SKIP_SEGMENT_CATEGORIES,
+                KEY_PLAYER_AUTO_SKIP_SERVER_BASE_URL,
+                KEY_PLAYER_OPEN_DETAIL_BEFORE_PLAY,
+                KEY_PLAYER_DEBUG,
+                KEY_PLAYER_DOUBLE_BACK_TO_EXIT,
+                KEY_PLAYER_DOWN_KEY_OSD_FOCUS_TARGET,
+                KEY_PLAYER_TOGGLE_PLAY_STATE_SHOW_OSD,
+                KEY_PLAYER_PERSISTENT_BOTTOM_PROGRESS,
+                KEY_PLAYER_PERSISTENT_CLOCK,
+                KEY_PLAYER_TOUCH_GESTURES_ENABLED,
+                KEY_PLAYER_LEFT_EDGE_LONG_PRESS_BOOST_ENABLED,
+                KEY_PLAYER_LEFT_VERTICAL_SWIPE_ACTION,
+                KEY_PLAYER_RIGHT_VERTICAL_SWIPE_ACTION,
+                KEY_PLAYER_VIDEOSHOT_PREVIEW_SIZE,
+                KEY_PLAYER_AUDIO_BALANCE_LEVEL,
+                KEY_PLAYER_PLAYBACK_MODE,
+                KEY_PLAYER_SETTINGS_APPLY_TO_GLOBAL,
+                KEY_PLAYER_UP_QUICK_CARD_ENABLED,
+                KEY_PLAYER_OSD_BUTTONS,
+                KEY_PLAYER_CUSTOM_SHORTCUTS,
+                KEY_FULLSCREEN,
+                KEY_AVOID_DISPLAY_CUTOUT,
+                KEY_TAB_SWITCH_FOLLOWS_FOCUS,
+                KEY_MAIN_AUTO_HIDE_SIDEBAR_ON_ENTER_CONTENT,
+                KEY_MAIN_BACK_FOCUS_SCHEME,
+                KEY_VIDEO_CARD_LONG_PRESS_ACTION,
+                KEY_GRID_SPAN,
+                KEY_DYNAMIC_GRID_SPAN,
+                KEY_PGC_GRID_SPAN,
+                KEY_PGC_EPISODE_ORDER_REVERSED,
+            )
+
         private val DIAGNOSTIC_EXCLUDED_KEYS: Set<String> =
             CREDENTIAL_KEYS +
                 setOf(
@@ -1240,10 +1343,13 @@ class AppPrefs(context: Context) {
         const val DANMAKU_LANE_DENSITY_STANDARD = "standard"
         const val DANMAKU_LANE_DENSITY_DENSE = "dense"
 
+        const val DANMAKU_TEXT_SIZE_SP_DEFAULT = 24f
+        const val SUBTITLE_TEXT_SIZE_SP_DEFAULT = 32f
+        const val SUBTITLE_BOTTOM_PADDING_FRACTION_DEFAULT = 0.04f
         const val DANMAKU_AREA_MIN = 0.10f
         const val DANMAKU_AREA_MAX = 1.00f
         const val DANMAKU_AREA_STEP = 0.10f
-        const val DANMAKU_AREA_DEFAULT = DANMAKU_AREA_MAX
+        const val DANMAKU_AREA_DEFAULT = 0.30f
         const val DANMAKU_AREA_COMPAT_EPSILON = 0.0001f
 
         val DANMAKU_AREA_OPTIONS: List<Float> = (1..10).map { it / 10f }
@@ -1334,7 +1440,7 @@ class AppPrefs(context: Context) {
         const val PLAYER_PLAYBACK_MODE_RECOMMEND = "recommend"
 
         val PLAYER_SHORT_SEEK_STEP_SECONDS_OPTIONS: Set<Int> = linkedSetOf(3, 5, 8, 10, 15, 20)
-        const val PLAYER_SHORT_SEEK_STEP_SECONDS_DEFAULT = 10
+        const val PLAYER_SHORT_SEEK_STEP_SECONDS_DEFAULT = 5
 
         const val PLAYER_HOLD_SEEK_MODE_SPEED = "speed"
         const val PLAYER_HOLD_SEEK_MODE_SCRUB = "scrub"
@@ -1342,7 +1448,7 @@ class AppPrefs(context: Context) {
         const val PLAYER_VERTICAL_SWIPE_ACTION_BRIGHTNESS = "brightness"
         const val PLAYER_VERTICAL_SWIPE_ACTION_VOLUME = "volume"
         const val PLAYER_VERTICAL_SWIPE_ACTION_NONE = "none"
-        const val PLAYER_HOLD_SEEK_SPEED_DEFAULT = 3.0f
+        const val PLAYER_HOLD_SEEK_SPEED_DEFAULT = 2.0f
         val PLAYER_HOLD_SCRUB_SECONDS_OPTIONS: Set<Int> = linkedSetOf(5, 8, 10, 12, 15, 17, 20, 22, 25, 27, 30)
         const val PLAYER_HOLD_SCRUB_SECONDS_DEFAULT = 10
 
@@ -1354,7 +1460,6 @@ class AppPrefs(context: Context) {
         const val PLAYER_VIDEOSHOT_PREVIEW_SIZE_MEDIUM = "medium"
         const val PLAYER_VIDEOSHOT_PREVIEW_SIZE_LARGE = "large"
 
-        private const val SUBTITLE_BOTTOM_PADDING_FRACTION_DEFAULT = 0.16f
         private const val SUBTITLE_BACKGROUND_OPACITY_DEFAULT = 34f / 255f
 
         const val PLAYER_OSD_BTN_PREV = "prev"

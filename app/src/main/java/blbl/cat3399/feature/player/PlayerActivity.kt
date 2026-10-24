@@ -208,6 +208,7 @@ class PlayerActivity : BaseActivity() {
     internal var keySeekPendingDirection: Int = 0
     internal var seekOsdToken: Long = 0L
     internal var transientSeekOsdVisible: Boolean = false
+    internal var commentsTouchSeekProgressVisible: Boolean = false
     internal var bottomBarFullConstraints: ConstraintSet? = null
 
     internal enum class OsdMode {

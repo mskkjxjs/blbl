@@ -9,6 +9,7 @@ import android.view.View
 import blbl.cat3399.core.emote.ReplyEmotePanelRepository
 import blbl.cat3399.core.log.AppLog
 import blbl.cat3399.core.model.Danmaku
+import blbl.cat3399.core.prefs.AppPrefs
 import java.util.concurrent.atomic.AtomicLong
 import java.util.Locale
 
@@ -397,11 +398,11 @@ class DanmakuView @JvmOverloads constructor(
         DanmakuConfig(
             enabled = true,
             opacity = 1f,
-            textSizeSp = 18f,
+            textSizeSp = AppPrefs.DANMAKU_TEXT_SIZE_SP_DEFAULT,
             fontWeight = DanmakuFontWeight.Bold,
             strokeWidthPx = 4,
             speedLevel = 4,
-            area = 1f,
+            area = AppPrefs.DANMAKU_AREA_DEFAULT,
             laneDensity = DanmakuLaneDensity.Standard,
             showHighLikeIcon = true,
         )

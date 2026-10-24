@@ -44,4 +44,44 @@ class PlayerOsdVisibilityPolicyTest {
             ),
         )
     }
+
+    @Test
+    fun commentsTouchSeekShowsPersistentProgressEvenWhenPreferenceDisabled() {
+        assertTrue(
+            shouldShowPersistentBottomProgress(
+                persistentEnabled = false,
+                showControls = true,
+                transientSeekOsdVisible = false,
+                commentsTouchSeekVisible = true,
+            ),
+        )
+    }
+
+    @Test
+    fun regularPersistentProgressKeepsExistingVisibilityRules() {
+        assertTrue(
+            shouldShowPersistentBottomProgress(
+                persistentEnabled = true,
+                showControls = false,
+                transientSeekOsdVisible = false,
+                commentsTouchSeekVisible = false,
+            ),
+        )
+        assertFalse(
+            shouldShowPersistentBottomProgress(
+                persistentEnabled = true,
+                showControls = true,
+                transientSeekOsdVisible = false,
+                commentsTouchSeekVisible = false,
+            ),
+        )
+        assertFalse(
+            shouldShowPersistentBottomProgress(
+                persistentEnabled = true,
+                showControls = false,
+                transientSeekOsdVisible = true,
+                commentsTouchSeekVisible = false,
+            ),
+        )
+    }
 }

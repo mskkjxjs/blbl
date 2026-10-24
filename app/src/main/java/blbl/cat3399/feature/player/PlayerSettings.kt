@@ -920,7 +920,7 @@ internal fun PlayerActivity.showSubtitleTextSizeDialog() {
     val options = PlaybackSettingChoices.subtitleTextSizes
     val current =
         options.indices.minByOrNull { abs(options[it].toFloat() - session.subtitleTextSizeSp) }
-            ?: options.indexOf(26).takeIf { it >= 0 }
+            ?: options.indexOf(AppPrefs.SUBTITLE_TEXT_SIZE_SP_DEFAULT.toInt()).takeIf { it >= 0 }
             ?: 0
     showSettingsChoiceDialog(
         title = "字幕字体大小",
@@ -940,7 +940,7 @@ internal fun PlayerActivity.showSubtitleBottomPaddingDialog() {
     val options = PlaybackSettingChoices.subtitleBottomPaddingPercents
     val current =
         options.indices.minByOrNull { abs(options[it] / 100f - session.subtitleBottomPaddingFraction) }
-            ?: options.indexOf(16).takeIf { it >= 0 }
+            ?: options.indexOf((AppPrefs.SUBTITLE_BOTTOM_PADDING_FRACTION_DEFAULT * 100f).toInt()).takeIf { it >= 0 }
             ?: 0
     showSettingsChoiceDialog(
         title = "字幕底部间距",
@@ -989,7 +989,7 @@ internal fun PlayerActivity.applySubtitleStyle() {
 private fun PlayerActivity.applySubtitleStyle(subtitleView: SubtitleView) {
     val bottomPaddingFraction =
         session.subtitleBottomPaddingFraction
-            .let { if (it.isFinite()) it else 0.16f }
+            .let { if (it.isFinite()) it else AppPrefs.SUBTITLE_BOTTOM_PADDING_FRACTION_DEFAULT }
             .coerceIn(0f, 0.30f)
     // Prefer padding-based positioning to work consistently across different cue defaults.
     // Keep SubtitleView's own bottomPaddingFraction at 0 to avoid double-applying spacing.
@@ -1045,7 +1045,7 @@ internal fun PlayerActivity.applySubtitleTextSize() {
     val subtitleView = binding.playerView.findViewById<SubtitleView>(androidx.media3.ui.R.id.exo_subtitles) ?: return
     val sizeSp =
         session.subtitleTextSizeSp
-            .let { if (it.isFinite()) it else 26f }
+            .let { if (it.isFinite()) it else AppPrefs.SUBTITLE_TEXT_SIZE_SP_DEFAULT }
             .coerceIn(10f, 60f)
     subtitleView.setFixedTextSize(TypedValue.COMPLEX_UNIT_SP, sizeSp)
 }
@@ -1072,7 +1072,7 @@ internal fun PlayerActivity.showDanmakuTextSizeDialog() {
     val options = PlaybackSettingChoices.danmakuTextSizes
     val current =
         options.indices.minByOrNull { kotlin.math.abs(options[it].toFloat() - session.danmaku.textSizeSp) }
-            ?: options.indexOf(18).takeIf { it >= 0 }
+            ?: options.indexOf(AppPrefs.DANMAKU_TEXT_SIZE_SP_DEFAULT.toInt()).takeIf { it >= 0 }
             ?: 0
     showSettingsChoiceDialog(
         title = "弹幕字体大小",

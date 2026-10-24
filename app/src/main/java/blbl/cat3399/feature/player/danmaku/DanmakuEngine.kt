@@ -14,6 +14,7 @@ import blbl.cat3399.core.emote.EmoteBitmapLoader
 import blbl.cat3399.core.emote.ReplyEmotePanelRepository
 import blbl.cat3399.core.model.Danmaku
 import blbl.cat3399.core.model.isHighLiked
+import blbl.cat3399.core.prefs.AppPrefs
 import blbl.cat3399.feature.player.danmaku.model.DanmakuCacheState
 import blbl.cat3399.feature.player.danmaku.model.DanmakuItem
 import blbl.cat3399.feature.player.danmaku.model.DanmakuInlineSegment
@@ -99,16 +100,16 @@ internal class DanmakuEngine(
         DanmakuConfig(
             enabled = true,
             opacity = 1f,
-            textSizeSp = 18f,
+            textSizeSp = AppPrefs.DANMAKU_TEXT_SIZE_SP_DEFAULT,
             fontWeight = DanmakuFontWeight.Bold,
             strokeWidthPx = 4,
             speedLevel = 4,
-            area = 1f,
+            area = AppPrefs.DANMAKU_AREA_DEFAULT,
             laneDensity = DanmakuLaneDensity.Standard,
             showHighLikeIcon = true,
         )
 
-    @Volatile private var textSizePx: Float = sp(18f)
+    @Volatile private var textSizePx: Float = sp(AppPrefs.DANMAKU_TEXT_SIZE_SP_DEFAULT)
     @Volatile private var strokeWidthPx: Float = 4f
     @Volatile private var outlinePadPx: Float = 2f
 

@@ -68,7 +68,7 @@ object SettingsText {
         }
 
     fun subtitleBottomPaddingText(fraction: Float): String {
-        val v = fraction.takeIf { it.isFinite() } ?: 0.16f
+        val v = fraction.takeIf { it.isFinite() } ?: AppPrefs.SUBTITLE_BOTTOM_PADDING_FRACTION_DEFAULT
         val pct = (v.coerceIn(0f, 0.30f) * 100f).roundToInt()
         return "${pct}%"
     }

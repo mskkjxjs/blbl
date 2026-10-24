@@ -740,6 +740,7 @@ class SettingsInteractionHandler(
             SettingId.GaiaVgate -> showGaiaVgateDialog(state.currentSectionIndex, entry.id)
             SettingId.ClearCache -> showClearCacheDialog(state.currentSectionIndex, entry.id)
             SettingId.ConfigTransfer -> showConfigTransferDialog()
+            SettingId.RestoreDefaults -> showRestoreDefaultsDialog()
             SettingId.ClearLogin -> showClearLoginDialog(state.currentSectionIndex, entry.id)
             SettingId.ExportLogs -> {
                 val prepared = prepareLogsExport()
@@ -988,7 +989,8 @@ class SettingsInteractionHandler(
                     items = options.map { it.toString() },
                     current = prefs.subtitleTextSizeSp.toInt().toString(),
                 ) { selected ->
-                    prefs.subtitleTextSizeSp = (selected.toIntOrNull() ?: 26).toFloat().coerceIn(10f, 60f)
+                    prefs.subtitleTextSizeSp =
+                        (selected.toIntOrNull() ?: AppPrefs.SUBTITLE_TEXT_SIZE_SP_DEFAULT.toInt()).toFloat().coerceIn(10f, 60f)
                     renderer.refreshSection(entry.id)
                 }
             }
@@ -1004,7 +1006,10 @@ class SettingsInteractionHandler(
                     items = items,
                     checkedIndex = checked,
                 ) { selected ->
-                    val percent = selected.removeSuffix("%").toIntOrNull() ?: options.getOrNull(checked) ?: 16
+                    val percent =
+                        selected.removeSuffix("%").toIntOrNull()
+                            ?: options.getOrNull(checked)
+                            ?: (AppPrefs.SUBTITLE_BOTTOM_PADDING_FRACTION_DEFAULT * 100f).toInt()
                     prefs.subtitleBottomPaddingFraction = percent / 100f
                     renderer.refreshSection(entry.id)
                 }
@@ -1044,7 +1049,8 @@ class SettingsInteractionHandler(
                     items = options.map { it.toString() },
                     current = prefs.danmakuTextSizeSp.toInt().toString(),
                 ) { selected ->
-                    prefs.danmakuTextSizeSp = (selected.toIntOrNull() ?: 18).toFloat().coerceIn(10f, 60f)
+                    prefs.danmakuTextSizeSp =
+                        (selected.toIntOrNull() ?: AppPrefs.DANMAKU_TEXT_SIZE_SP_DEFAULT.toInt()).toFloat().coerceIn(10f, 60f)
                     renderer.refreshSection(entry.id)
                 }
             }
@@ -1085,7 +1091,7 @@ class SettingsInteractionHandler(
                     items = options.map { it.second },
                     current = SettingsText.areaText(prefs.danmakuArea),
                 ) { selected ->
-                    val value = options.firstOrNull { it.second == selected }?.first ?: 1.0f
+                    val value = options.firstOrNull { it.second == selected }?.first ?: AppPrefs.DANMAKU_AREA_DEFAULT
                     prefs.danmakuArea = value
                     renderer.refreshSection(entry.id)
                 }
@@ -2708,6 +2714,23 @@ class SettingsInteractionHandler(
             onSelected(value)
             renderer.showSection(sectionIndex, focusId = focusId)
         }
+    }
+
+    private fun showRestoreDefaultsDialog() {
+        AppPopup.confirm(
+            context = activity,
+            title = "还原默认设置",
+            message = "将还原全部普通设置，保留登录状态、已保存帐号、搜索历史和设备标识。确定继续吗？",
+            positiveText = "还原默认",
+            negativeText = "取消",
+            cancelable = true,
+            onPositive = {
+                BiliClient.prefs.restoreDefaultSettings()
+                evictNetworkConnections()
+                AppToast.show(activity, "已还原默认设置")
+                restartToMain()
+            },
+        )
     }
 
     private fun showClearLoginDialog(sectionIndex: Int, focusId: SettingId) {

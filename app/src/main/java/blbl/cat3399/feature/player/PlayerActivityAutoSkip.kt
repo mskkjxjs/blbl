@@ -81,10 +81,10 @@ internal fun PlayerActivity.updateProgressUi() {
             binding.seekProgress.progress = actualProgress
         }
         val pNow = ((uiPos.toDouble() / duration.toDouble()) * PlayerActivity.SEEK_MAX).toInt().coerceIn(0, PlayerActivity.SEEK_MAX)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !uiScrubbing) {
             binding.progressPersistentBottom.setProgress(actualProgress, true)
         } else {
-            binding.progressPersistentBottom.progress = actualProgress
+            binding.progressPersistentBottom.progress = if (uiScrubbing) pNow else actualProgress
         }
         binding.progressSeekOsd.progress = pNow
     } else {

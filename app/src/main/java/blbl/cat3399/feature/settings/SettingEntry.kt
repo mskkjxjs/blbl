@@ -17,6 +17,7 @@ enum class SettingId(
     GaiaVgate("gaia_vgate"),
     ClearCache("clear_cache"),
     ConfigTransfer("config_transfer"),
+    RestoreDefaults("restore_defaults"),
     ClearLogin("clear_login"),
 
     // 页面设置

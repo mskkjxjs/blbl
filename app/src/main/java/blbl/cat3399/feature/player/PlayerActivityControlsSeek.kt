@@ -25,6 +25,13 @@ internal fun shouldShowPlayerOsd(
     touchLocked: Boolean,
 ): Boolean = requestedVisible && !hasOverlayPanel && !touchLocked
 
+internal fun shouldShowPersistentBottomProgress(
+    persistentEnabled: Boolean,
+    showControls: Boolean,
+    transientSeekOsdVisible: Boolean,
+    commentsTouchSeekVisible: Boolean,
+): Boolean = commentsTouchSeekVisible || (persistentEnabled && !showControls && !transientSeekOsdVisible)
+
 internal fun PlayerActivity.seekRelative(deltaMs: Long) {
     seekRelative(deltaMs, danmakuImmediate = true)
 }
@@ -71,6 +78,7 @@ internal fun PlayerActivity.setControlsVisible(visible: Boolean) {
     seekOsdHideJob = null
     seekOsdToken = 0L
     transientSeekOsdVisible = false
+    commentsTouchSeekProgressVisible = false
     osdMode = if (show) PlayerActivity.OsdMode.Full else PlayerActivity.OsdMode.Hidden
 
     binding.controlsRow.visibility = if (show) View.VISIBLE else View.GONE
@@ -108,6 +116,37 @@ internal fun PlayerActivity.updateTopBarUi() {
     binding.btnBack.visibility = contentVisibility
     binding.titleRow.visibility = contentVisibility
     updateClockVisibility()
+}
+
+internal fun PlayerActivity.showCommentsTouchSeekProgress(posMs: Long, durationMs: Long, bufferedPosMs: Long) {
+    if (!isCommentsPanelVisible()) return
+    val duration = durationMs.coerceAtLeast(0L)
+    val enabled = duration > 0L
+    binding.progressPersistentBottom.isEnabled = enabled
+    if (enabled) {
+        binding.progressPersistentBottom.secondaryProgress =
+            ((bufferedPosMs.coerceAtLeast(0L).toDouble() / duration.toDouble()) * PlayerActivity.SEEK_MAX)
+                .toInt()
+                .coerceIn(0, PlayerActivity.SEEK_MAX)
+        binding.progressPersistentBottom.progress =
+            ((posMs.coerceAtLeast(0L).toDouble() / duration.toDouble()) * PlayerActivity.SEEK_MAX)
+                .toInt()
+                .coerceIn(0, PlayerActivity.SEEK_MAX)
+    } else {
+        binding.progressPersistentBottom.secondaryProgress = 0
+        binding.progressPersistentBottom.progress = 0
+    }
+    commentsTouchSeekProgressVisible = true
+    updatePersistentBottomProgressBarVisibility()
+    scheduleHideSeekOsd()
+}
+
+internal fun PlayerActivity.hideCommentsTouchSeekProgress() {
+    commentsTouchSeekProgressVisible = false
+    seekOsdHideJob?.cancel()
+    seekOsdHideJob = null
+    seekOsdToken = 0L
+    updatePersistentBottomProgressBarVisibility()
 }
 
 internal fun PlayerActivity.showSeekOsd() {
@@ -217,6 +256,7 @@ internal fun PlayerActivity.scheduleHideSeekOsd() {
             delay(PlayerActivity.SEEK_OSD_HIDE_DELAY_MS)
             if (seekOsdToken != token) return@launch
             transientSeekOsdVisible = false
+            commentsTouchSeekProgressVisible = false
 
             hideVideoShotPreviewNow()
 
@@ -261,7 +301,14 @@ internal fun PlayerActivity.showVideoShotPreviewForSeek(
 internal fun PlayerActivity.updatePersistentBottomProgressBarVisibility() {
     val enabled = session.persistentBottomProgressEnabled
     val showControls = osdMode != PlayerActivity.OsdMode.Hidden || isOverlayPanelVisible()
-    val persistentV = if (enabled && !showControls && !transientSeekOsdVisible) View.VISIBLE else View.GONE
+    val showPersistent =
+        shouldShowPersistentBottomProgress(
+            persistentEnabled = enabled,
+            showControls = showControls,
+            transientSeekOsdVisible = transientSeekOsdVisible,
+            commentsTouchSeekVisible = commentsTouchSeekProgressVisible && isCommentsPanelVisible(),
+        )
+    val persistentV = if (showPersistent) View.VISIBLE else View.GONE
     if (binding.progressPersistentBottom.visibility != persistentV) binding.progressPersistentBottom.visibility = persistentV
 
     val seekOsdV = if (!showControls && transientSeekOsdVisible) View.VISIBLE else View.GONE
