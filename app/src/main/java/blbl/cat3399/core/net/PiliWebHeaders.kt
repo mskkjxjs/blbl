@@ -20,6 +20,19 @@ internal object PiliWebHeaders {
         return out
     }
 
+    /**
+     * Headers for playurl requests routed through the borrowed account. The cookie is supplied
+     * explicitly and the main account's identity headers (x-bili-mid / aurora-eid) are omitted so
+     * the two accounts never mix.
+     */
+    fun forBorrowedPlayback(cookieHeader: String): Map<String, String> {
+        val out = baseHeaders(includeMid = false).toMutableMap()
+        out["Referer"] = REFERER
+        out["X-Blbl-Skip-Origin"] = "1"
+        out["Cookie"] = cookieHeader
+        return out
+    }
+
     private fun baseHeaders(includeMid: Boolean = true): Map<String, String> {
         val headers =
             mutableMapOf(

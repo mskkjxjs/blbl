@@ -440,7 +440,8 @@ internal class WebVideoApi(
     }
 
     private suspend fun requestUgcPlayJson(request: VideoPlayRequest): JSONObject {
-        transport.ensureUgcPlayCookieMaintenance()
+        val borrowCookie = transport.playbackBorrowCookie()
+        if (borrowCookie == null) transport.ensureUgcPlayCookieMaintenance()
         val bvid = request.bvid?.trim().orEmpty()
         val cid = request.cid?.takeIf { it > 0 } ?: error("cid required")
         if (bvid.isBlank()) error("bvid required")
@@ -458,19 +459,24 @@ internal class WebVideoApi(
                 "gaia_source" to "pre-load",
                 "isGaiaAvoided" to "true",
             )
-        if (request.tryLook || !transport.hasSessData()) {
+        if (request.tryLook || (borrowCookie == null && !transport.hasSessData())) {
             params["try_look"] = "1"
         }
-        if (!request.tryLook) {
+        if (!request.tryLook && borrowCookie == null) {
             transport.cookieValue("x-bili-gaia-vtoken")?.trim()?.takeIf { it.isNotBlank() }?.let {
                 params["gaia_vtoken"] = it
             }
         }
-        return requestWbiPlayUrl(params = params, includeCookie = !request.tryLook)
+        return requestWbiPlayUrl(
+            params = params,
+            includeCookie = !request.tryLook,
+            borrowCookie = if (request.tryLook) null else borrowCookie,
+        )
     }
 
     private suspend fun requestPgcPlayJson(request: VideoPlayRequest): JSONObject {
-        transport.ensurePgcPlayCookieMaintenance()
+        val borrowCookie = transport.playbackBorrowCookie()
+        if (borrowCookie == null) transport.ensurePgcPlayCookieMaintenance()
         val safeBvid = request.bvid?.trim().orEmpty()
         val safeAid = request.aid?.takeIf { it > 0 }
         if (safeBvid.isBlank() && safeAid == null) error("bvid or aid required")
@@ -486,7 +492,7 @@ internal class WebVideoApi(
             )
         if (request.tryLook) {
             params["try_look"] = "1"
-        } else {
+        } else if (borrowCookie == null) {
             transport.cookieValue("x-bili-gaia-vtoken")?.trim()?.takeIf { it.isNotBlank() }?.let {
                 params["gaia_vtoken"] = it
             }
@@ -500,7 +506,12 @@ internal class WebVideoApi(
         val json =
             transport.getJson(
                 url = url,
-                headers = transport.webHeaders(targetUrl = url, includeCookie = !request.tryLook),
+                headers =
+                    transport.playbackHeaders(
+                        targetUrl = url,
+                        includeCookie = !request.tryLook,
+                        borrowCookie = if (request.tryLook) null else borrowCookie,
+                    ),
                 noCookies = true,
             )
         checkApiCode(json)
@@ -512,13 +523,19 @@ internal class WebVideoApi(
     private suspend fun requestWbiPlayUrl(
         params: Map<String, String>,
         includeCookie: Boolean,
+        borrowCookie: String?,
     ): JSONObject {
         val keys = transport.ensureWbiKeys()
         val url = transport.signedWbiUrl(path = "/x/player/wbi/playurl", params = params, keys = keys)
         val json =
             transport.getJson(
                 url = url,
-                headers = transport.webHeaders(targetUrl = url, includeCookie = includeCookie),
+                headers =
+                    transport.playbackHeaders(
+                        targetUrl = url,
+                        includeCookie = includeCookie,
+                        borrowCookie = borrowCookie,
+                    ),
                 noCookies = true,
             )
         checkApiCode(json)

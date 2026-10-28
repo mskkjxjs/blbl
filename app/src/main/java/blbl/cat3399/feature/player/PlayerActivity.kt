@@ -67,6 +67,8 @@ import blbl.cat3399.core.log.AppLog
 import blbl.cat3399.core.model.DanmakuShield
 import blbl.cat3399.core.model.VideoCard
 import blbl.cat3399.core.net.BiliClient
+import blbl.cat3399.core.net.BorrowAccountRefresher
+import blbl.cat3399.core.net.BorrowAccountStore
 import blbl.cat3399.core.prefs.AppPrefs
 import blbl.cat3399.core.ui.ActivityStackLimiter
 import blbl.cat3399.core.ui.AppToast
@@ -1201,7 +1203,11 @@ class PlayerActivity : BaseActivity() {
                     preferCodec = session.preferCodec,
                 )
             }
-        return BiliApi.playUrl(request)
+        val borrowActive = BorrowAccountStore.isPlaybackActive()
+        if (borrowActive) BorrowAccountRefresher.ensureFreshForPlayback()
+        val stream = BiliApi.playUrl(request)
+        // A borrowed playurl carries the small account's resume; keep the main account's progress.
+        return if (borrowActive) stream.copy(resume = null) else stream
     }
 
     private fun shouldAttemptTryLookFallback(stream: VideoPlayStream): Boolean {

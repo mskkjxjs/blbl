@@ -59,6 +59,7 @@ object BiliClient {
         prefs = AppPrefs(context.applicationContext)
         accounts = AccountSessionStore(context.applicationContext)
         cookies = CookieStore(context.applicationContext)
+        BorrowAccountStore.init(context.applicationContext)
         val dns = ipv4OnlyDns { prefs.ipv4OnlyEnabled }
         val baseClient = OkHttpClient.Builder()
             .cookieJar(cookies)

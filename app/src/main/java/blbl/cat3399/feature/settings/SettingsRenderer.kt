@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import blbl.cat3399.BuildConfig
 import blbl.cat3399.core.net.BiliClient
+import blbl.cat3399.core.net.BorrowAccountStore
 import blbl.cat3399.core.ui.FocusTreeUtils
 import blbl.cat3399.core.ui.requestFocusAdapterPositionReliable
 import blbl.cat3399.databinding.ActivitySettingsBinding
@@ -233,6 +234,34 @@ class SettingsRenderer(
                     SettingEntry(SettingId.ConfigTransfer, "导出/入配置", "打开", null),
                     SettingEntry(SettingId.RestoreDefaults, "还原默认设置", "还原", "保留登录状态、搜索历史和设备标识"),
                     SettingEntry(SettingId.ClearLogin, "清除登录", loginStatusText(), null),
+                )
+
+            "取流设置" ->
+                listOf(
+                    SettingEntry(
+                        SettingId.BorrowAccount,
+                        "小号帐号",
+                        borrowAccountAccountText(),
+                        "扫码登录或手动填写小号 Cookie；仅播放取流使用小号",
+                    ),
+                    SettingEntry(
+                        SettingId.BorrowEnabled,
+                        "启用小号取流",
+                        borrowAccountEnabledText(),
+                        "关闭后取流恢复使用当前帐号",
+                    ),
+                    SettingEntry(
+                        SettingId.BorrowRefresh,
+                        "续期状态",
+                        borrowAccountRefreshText(),
+                        "凭证每日自动检查一次；可在此立即检查",
+                    ),
+                    SettingEntry(
+                        SettingId.BorrowClear,
+                        "清除小号凭证",
+                        "清除",
+                        "删除已保存的小号 Cookie 与续期信息",
+                    ),
                 )
 
             "页面设置" ->
@@ -608,6 +637,36 @@ class SettingsRenderer(
             tokenOk -> "已通过"
             voucherOk -> "待验证"
             else -> "无"
+        }
+    }
+
+    private fun borrowAccountAccountText(): String {
+        val st = BorrowAccountStore.state()
+        return when {
+            !st.configured -> "未配置"
+            st.name.isNotBlank() && st.mid > 0L -> "${st.name}（UID ${st.mid}）"
+            st.name.isNotBlank() -> st.name
+            st.mid > 0L -> "UID ${st.mid}"
+            else -> "已配置"
+        }
+    }
+
+    private fun borrowAccountEnabledText(): String {
+        val st = BorrowAccountStore.state()
+        return when {
+            !st.configured -> "未配置"
+            st.enabled -> "开"
+            else -> "关"
+        }
+    }
+
+    private fun borrowAccountRefreshText(): String {
+        val st = BorrowAccountStore.state()
+        return when {
+            !st.configured -> "未配置"
+            !st.canAutoRefresh -> "缺少 bili_jct / ac_time_value"
+            st.refreshStatus.isNotBlank() -> st.refreshStatus
+            else -> "已就绪（每日检查）"
         }
     }
 

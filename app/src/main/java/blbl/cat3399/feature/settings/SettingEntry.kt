@@ -20,6 +20,12 @@ enum class SettingId(
     RestoreDefaults("restore_defaults"),
     ClearLogin("clear_login"),
 
+    // 取流设置
+    BorrowAccount("borrow_account"),
+    BorrowEnabled("borrow_enabled"),
+    BorrowRefresh("borrow_refresh"),
+    BorrowClear("borrow_clear"),
+
     // 页面设置
     StartupPage("startup_page"),
     CustomPageEnabled("custom_page_enabled"),

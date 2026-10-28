@@ -28,6 +28,8 @@ import blbl.cat3399.core.log.AppLog
 import blbl.cat3399.core.log.LogExporter
 import blbl.cat3399.core.log.LogUploadClient
 import blbl.cat3399.core.net.BiliClient
+import blbl.cat3399.core.net.BorrowAccountRefresher
+import blbl.cat3399.core.net.BorrowAccountStore
 import blbl.cat3399.core.prefs.AppConfigBackup
 import blbl.cat3399.core.prefs.AppPrefs
 import blbl.cat3399.core.prefs.CustomPageConfig
@@ -55,6 +57,7 @@ import blbl.cat3399.feature.custom.CustomPageSearchSourceKind
 import blbl.cat3399.feature.custom.CustomPageTabRegistry
 import blbl.cat3399.feature.home.HomeTabs
 import blbl.cat3399.feature.live.LiveFragment
+import blbl.cat3399.feature.login.BorrowAccountActivity
 import blbl.cat3399.feature.my.MyTabs
 import blbl.cat3399.ui.MainRootNavRegistry
 import blbl.cat3399.ui.MainActivity
@@ -80,6 +83,7 @@ class SettingsInteractionHandler(
     private val gaiaVgateLauncher: ActivityResultLauncher<Intent>,
     private val exportDocumentLauncher: ActivityResultLauncher<CreateDocumentRequest>,
     private val importConfigLauncher: ActivityResultLauncher<Array<String>>,
+    private val borrowAccountLauncher: ActivityResultLauncher<Intent>,
 ) {
     lateinit var renderer: SettingsRenderer
 
@@ -96,6 +100,7 @@ class SettingsInteractionHandler(
     private var clearCacheJob: Job? = null
     private var cacheSizeJob: Job? = null
     private var configTransferJob: Job? = null
+    private var borrowRefreshJob: Job? = null
     private var pendingDocumentExport: ((Uri) -> Unit)? = null
 
     fun onSectionShown(sectionName: String) {
@@ -116,6 +121,67 @@ class SettingsInteractionHandler(
         prefs.gaiaVgateVVoucherSavedAtMs = -1L
         AppToast.show(activity, "验证成功，已写入风控票据")
         renderer.refreshSection(SettingId.GaiaVgate)
+    }
+
+    fun onBorrowAccountResult() {
+        renderer.refreshSection(SettingId.BorrowAccount)
+    }
+
+    private fun toggleBorrowEnabled() {
+        val st = BorrowAccountStore.state()
+        if (!st.configured) {
+            AppToast.show(activity, "请先配置小号凭证")
+            return
+        }
+        val next = !st.enabled
+        if (!BorrowAccountStore.setEnabled(next)) {
+            AppToast.show(activity, "切换失败")
+            return
+        }
+        AppToast.show(activity, if (next) "已启用小号取流" else "已停用小号取流")
+        renderer.refreshSection(SettingId.BorrowEnabled)
+    }
+
+    private fun refreshBorrowAccountNow() {
+        val st = BorrowAccountStore.state()
+        if (!st.configured) {
+            AppToast.show(activity, "请先配置小号凭证")
+            return
+        }
+        if (!st.canAutoRefresh) {
+            AppToast.show(activity, "缺少 bili_jct 或 ac_time_value，无法自动续期")
+            return
+        }
+        if (borrowRefreshJob?.isActive == true) {
+            AppToast.show(activity, "正在检查…")
+            return
+        }
+        AppToast.show(activity, "正在检查续期状态…")
+        borrowRefreshJob =
+            activity.lifecycleScope.launch {
+                val result = BorrowAccountRefresher.refreshIfNeeded(force = true)
+                AppToast.show(activity, result.message)
+                renderer.refreshSection(SettingId.BorrowRefresh)
+            }
+    }
+
+    private fun confirmClearBorrowAccount() {
+        if (!BorrowAccountStore.state().configured) {
+            AppToast.show(activity, "尚未配置小号凭证")
+            return
+        }
+        AppPopup.confirm(
+            context = activity,
+            title = "清除小号凭证",
+            message = "将删除已保存的小号 SESSDATA 与续期信息，取流恢复使用当前帐号。确定继续吗？",
+            positiveText = "清除",
+            negativeText = "取消",
+            onPositive = {
+                BorrowAccountStore.clear()
+                AppToast.show(activity, "已清除小号凭证")
+                renderer.refreshSection(SettingId.BorrowClear)
+            },
+        )
     }
 
     fun onExportDocumentSelected(uri: Uri?) {
@@ -738,6 +804,10 @@ class SettingsInteractionHandler(
                 renderer.refreshSection(entry.id)
             }
             SettingId.GaiaVgate -> showGaiaVgateDialog(state.currentSectionIndex, entry.id)
+            SettingId.BorrowAccount -> borrowAccountLauncher.launch(Intent(activity, BorrowAccountActivity::class.java))
+            SettingId.BorrowEnabled -> toggleBorrowEnabled()
+            SettingId.BorrowRefresh -> refreshBorrowAccountNow()
+            SettingId.BorrowClear -> confirmClearBorrowAccount()
             SettingId.ClearCache -> showClearCacheDialog(state.currentSectionIndex, entry.id)
             SettingId.ConfigTransfer -> showConfigTransferDialog()
             SettingId.RestoreDefaults -> showRestoreDefaultsDialog()

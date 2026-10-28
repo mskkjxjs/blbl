@@ -7,6 +7,7 @@ import blbl.cat3399.core.api.BiliApiSourceProvider
 import blbl.cat3399.core.model.VideoCard
 import blbl.cat3399.core.model.VideoTag
 import blbl.cat3399.core.net.BiliClient
+import blbl.cat3399.core.net.BorrowAccountStore
 import blbl.cat3399.core.api.video.app.AppVideoApi
 import blbl.cat3399.core.api.video.web.WebVideoApi
 
@@ -226,7 +227,8 @@ internal class VideoApiSources(
     providers: List<VideoSourceApi>,
     preferredSource: () -> BiliApiSource,
 ) {
-    private val selector = ApiSourceSelector(providers = providers, preferredSource = preferredSource)
+    private val providers = providers.toList()
+    private val selector = ApiSourceSelector(providers = this.providers, preferredSource = preferredSource)
 
     suspend fun detail(request: VideoDetailRequest): VideoDetail =
         selector.providerFor(BiliApiCapability.VIDEO_DETAIL).detail(request)
@@ -249,8 +251,15 @@ internal class VideoApiSources(
     suspend fun archiveRelated(request: ArchiveRelatedRequest): ArchiveRelatedPage =
         selector.providerFor(BiliApiCapability.VIDEO_ARCHIVE_RELATED).archiveRelated(request)
 
-    suspend fun playUrl(request: VideoPlayRequest): VideoPlayStream =
-        selector.providerFor(request.capability).playUrl(request)
+    suspend fun playUrl(request: VideoPlayRequest): VideoPlayStream {
+        val borrowProvider =
+            if (BorrowAccountStore.isPlaybackActive()) {
+                providers.firstOrNull { it.source == BiliApiSource.WEB && it.supports(request.capability) }
+            } else {
+                null
+            }
+        return (borrowProvider ?: selector.providerFor(request.capability)).playUrl(request)
+    }
 
     suspend fun playerInfo(request: VideoPlayerInfoRequest): VideoPlayerInfo =
         selector.providerFor(BiliApiCapability.VIDEO_PLAYER_INFO).playerInfo(request)

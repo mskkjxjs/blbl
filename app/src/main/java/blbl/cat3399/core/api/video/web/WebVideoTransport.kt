@@ -1,6 +1,7 @@
 package blbl.cat3399.core.api.video.web
 
 import blbl.cat3399.core.net.BiliClient
+import blbl.cat3399.core.net.BorrowAccountStore
 import blbl.cat3399.core.net.PiliWebHeaders
 import blbl.cat3399.core.net.WebCookieMaintainer
 import blbl.cat3399.core.net.WbiSigner
@@ -33,6 +34,15 @@ internal interface WebVideoApiTransport {
     fun webHeaders(
         targetUrl: String,
         includeCookie: Boolean,
+    ): Map<String, String>
+
+    /** Non-null when playurl should be requested with the borrowed account's cookie. */
+    fun playbackBorrowCookie(): String?
+
+    fun playbackHeaders(
+        targetUrl: String,
+        includeCookie: Boolean,
+        borrowCookie: String?,
     ): Map<String, String>
 
     fun cookieValue(name: String): String?
@@ -73,6 +83,19 @@ internal object BiliClientWebVideoApiTransport : WebVideoApiTransport {
         targetUrl: String,
         includeCookie: Boolean,
     ): Map<String, String> = PiliWebHeaders.forUrl(targetUrl = targetUrl, includeCookie = includeCookie)
+
+    override fun playbackBorrowCookie(): String? = BorrowAccountStore.playbackCookieHeader()
+
+    override fun playbackHeaders(
+        targetUrl: String,
+        includeCookie: Boolean,
+        borrowCookie: String?,
+    ): Map<String, String> =
+        if (borrowCookie.isNullOrBlank()) {
+            webHeaders(targetUrl = targetUrl, includeCookie = includeCookie)
+        } else {
+            PiliWebHeaders.forBorrowedPlayback(cookieHeader = borrowCookie)
+        }
 
     override fun cookieValue(name: String): String? = BiliClient.cookies.getCookieValue(name)
 

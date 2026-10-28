@@ -43,9 +43,16 @@ class SettingsActivity : BaseActivity() {
             interactionHandler.onImportConfigSelected(uri)
         }
 
+    private val borrowAccountLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (!this::interactionHandler.isInitialized) return@registerForActivityResult
+            interactionHandler.onBorrowAccountResult()
+        }
+
     private val sections =
         listOf(
             "通用设置",
+            "取流设置",
             "页面设置",
             "播放设置",
             "弹幕设置",
@@ -67,6 +74,7 @@ class SettingsActivity : BaseActivity() {
                 gaiaVgateLauncher = gaiaVgateLauncher,
                 exportDocumentLauncher = exportDocumentLauncher,
                 importConfigLauncher = importConfigLauncher,
+                borrowAccountLauncher = borrowAccountLauncher,
             )
 
         binding.btnBack.setOnClickListener { finish() }

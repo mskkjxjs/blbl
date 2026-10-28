@@ -316,7 +316,7 @@ object WebCookieMaintainer {
         return sb.toString()
     }
 
-    private fun getCorrespondPath(timestampMs: Long): String {
+    internal fun getCorrespondPath(timestampMs: Long): String {
         val plaintext = "refresh_$timestampMs"
         val input = plaintext.toByteArray(StandardCharsets.UTF_8)
         val cipher =
