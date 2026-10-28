@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import blbl.cat3399.BuildConfig
 import blbl.cat3399.core.net.BiliClient
 import blbl.cat3399.core.net.BorrowAccountStore
+import blbl.cat3399.core.prefs.PlayerCodec
 import blbl.cat3399.core.ui.FocusTreeUtils
 import blbl.cat3399.core.ui.requestFocusAdapterPositionReliable
 import blbl.cat3399.databinding.ActivitySettingsBinding
@@ -450,7 +451,7 @@ class SettingsRenderer(
                         null,
                     ),
                     SettingEntry(SettingId.SubtitleEnabledDefault, "默认开启字幕", if (prefs.subtitleEnabledDefault) "开" else "关", null),
-                    SettingEntry(SettingId.PlayerPreferredCodec, "视频编码", prefs.playerPreferredCodec, null),
+                    SettingEntry(SettingId.PlayerPreferredCodec, "视频编码", PlayerCodec.label(prefs.playerPreferredCodec), null),
                     SettingEntry(SettingId.PlayerOsdButtons, "OSD按钮显示", SettingsText.playerOsdButtonsText(prefs.playerOsdButtons), null),
                     SettingEntry(SettingId.PlayerUpQuickCardEnabled, "UP关注卡片", if (prefs.playerUpQuickCardEnabled) "开" else "关", null),
                     SettingEntry(SettingId.PlayerDoubleBackToExit, "按两次退出键才退出播放器", if (prefs.playerDoubleBackToExit) "开" else "关", null),
@@ -587,7 +588,6 @@ class SettingsRenderer(
                     SettingEntry(SettingId.QqGroup, "QQ交流群", SettingsConstants.QQ_GROUP, null),
                     SettingEntry(SettingId.LogTag, "日志标签", "BLBL", "用于 Logcat 过滤"),
                     SettingEntry(SettingId.ExportLogs, "导出日志", "保存文件", null),
-                    SettingEntry(SettingId.UploadLogs, "上传日志", "点击上传", "打包并上传日志zip到开发者（含设备/版本/非登录配置元数据）"),
                     playerKernelEntry(),
                     SettingEntry(
                         SettingId.AutoUpdateCheckEnabled,

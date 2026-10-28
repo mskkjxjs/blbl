@@ -35,6 +35,7 @@ import blbl.cat3399.core.api.video.VideoShotRequest
 import blbl.cat3399.core.api.video.VideoSourceApi
 import blbl.cat3399.core.api.video.VideoTagsPage
 import blbl.cat3399.core.api.video.VideoTagsRequest
+import blbl.cat3399.core.prefs.PlayerCodec
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -43,7 +44,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.Locale
 
 internal class AppVideoApi(
     private val httpTransport: AppVideoHttpTransport = BiliClientAppVideoHttpTransport,
@@ -75,6 +75,18 @@ internal class AppVideoApi(
     }
 
     private suspend fun requestUgcPlayStream(request: VideoPlayRequest): VideoPlayStream {
+        if (PlayerCodec.codecid(request.preferCodec) == null) {
+            val codecTypes = listOf(CodeType.CODE264, CodeType.CODE265, CodeType.CODEAV1)
+            val streams =
+                requestAllCodecs(codecTypes) { codecType ->
+                    requestUgcPlayStream(request = request, codecType = codecType)
+                }
+            return mapper.mergeStreams(streams)
+        }
+        return requestUgcPlayStream(request = request, codecType = ugcPreferredCodecType(request.preferCodec))
+    }
+
+    private suspend fun requestUgcPlayStream(request: VideoPlayRequest, codecType: CodeType): VideoPlayStream {
         val aid = request.aid?.takeIf { it > 0L } ?: error("aid required")
         val cid = request.cid?.takeIf { it > 0L } ?: error("cid required")
         val req =
@@ -91,7 +103,7 @@ internal class AppVideoApi(
                         .setDownload(0)
                         .setFourk(true)
                         .setForceHost(FORCE_HOST_HTTPS)
-                        .setPreferCodecType(ugcPreferredCodecType(request.preferCodec))
+                        .setPreferCodecType(codecType)
                         .setVoiceBalance(1)
                         .build(),
                 )
@@ -178,9 +190,9 @@ internal class AppVideoApi(
     private fun notImplemented(): Nothing = error("app_video_capability_not_implemented")
 
     private fun ugcPreferredCodecType(preferCodec: String?): CodeType =
-        when (preferCodec?.trim()?.uppercase(Locale.US)) {
-            "HEVC" -> CodeType.CODE265
-            "AV1" -> CodeType.CODEAV1
+        when (PlayerCodec.normalize(preferCodec)) {
+            PlayerCodec.HEVC -> CodeType.CODE265
+            PlayerCodec.AV1 -> CodeType.CODEAV1
             else -> CodeType.CODE264
         }
 

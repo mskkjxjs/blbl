@@ -5,6 +5,7 @@ import android.view.ViewConfiguration
 import androidx.lifecycle.lifecycleScope
 import blbl.cat3399.core.net.BiliClient
 import blbl.cat3399.core.prefs.AppPrefs
+import blbl.cat3399.core.prefs.PlayerCodec
 import blbl.cat3399.core.prefs.PlayerCustomShortcutAction
 import blbl.cat3399.core.prefs.PlayerCustomShortcutTrigger
 import blbl.cat3399.core.prefs.PlayerCustomShortcutsStore
@@ -277,7 +278,7 @@ private fun PlayerActivity.applyPlayerCustomShortcut(keyCode: Int, action: Playe
                 syncToGlobal = { playerPreferredCodec = it },
                 afterApplied = { reloadStream(keepPosition = true) },
             )
-            showSeekHint("视频编码：$next", hold = false)
+            showSeekHint("视频编码：${PlayerCodec.label(next)}", hold = false)
         }
 
         is PlayerCustomShortcutAction.SetPlaybackMode -> {

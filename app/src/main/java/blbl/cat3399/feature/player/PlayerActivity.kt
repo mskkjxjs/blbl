@@ -70,6 +70,7 @@ import blbl.cat3399.core.net.BiliClient
 import blbl.cat3399.core.net.BorrowAccountRefresher
 import blbl.cat3399.core.net.BorrowAccountStore
 import blbl.cat3399.core.prefs.AppPrefs
+import blbl.cat3399.core.prefs.PlayerCodec
 import blbl.cat3399.core.ui.ActivityStackLimiter
 import blbl.cat3399.core.ui.AppToast
 import blbl.cat3399.core.ui.BaseActivity
@@ -2821,11 +2822,7 @@ class PlayerActivity : BaseActivity() {
         val dash = stream.dash
         var dashVideoMetaForFallback: Playable.VideoOnly? = null
         if (dash != null) {
-            val preferCodecid = when (session.preferCodec) {
-                "HEVC" -> 12
-                "AV1" -> 13
-                else -> 7
-            }
+            val preferCodec = session.preferCodec
 
             val rawVideoItems = dash.videos.filter { it.urls.isNotEmpty() && it.qn > 0 }
 
@@ -2859,11 +2856,10 @@ class PlayerActivity : BaseActivity() {
                 val codecid = v.codecid
                 val qn = v.qn
                 val bandwidth = v.info.bandwidth ?: 0L
-                val okCodec = (codecid == preferCodecid)
                 val score =
                     (qnRank(qn).toLong() * 1_000_000_000_000L) +
-                        bandwidth +
-                        (if (okCodec) 10_000_000_000L else 0L)
+                        (PlayerCodec.rank(codecid, preferCodec).toLong() * 10_000_000_000L) +
+                        bandwidth
                 if (score > bestScore) {
                     bestScore = score
                     bestVideo = v

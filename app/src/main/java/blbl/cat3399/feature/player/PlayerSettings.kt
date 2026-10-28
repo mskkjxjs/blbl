@@ -14,6 +14,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import blbl.cat3399.core.log.AppLog
 import blbl.cat3399.core.net.BiliClient
 import blbl.cat3399.core.prefs.AppPrefs
+import blbl.cat3399.core.prefs.PlayerCodec
 import blbl.cat3399.core.prefs.PlayerPlaybackModes
 import blbl.cat3399.core.ui.AppToast
 import blbl.cat3399.core.ui.popup.AppPopup
@@ -516,7 +517,7 @@ private fun PlayerActivity.buildRootSettingsItems(
     return listOfNotNull(
         settingItem(PlayerSettingKeys.RESOLUTION, "分辨率", resolutionSubtitle()),
         settingItem(PlayerSettingKeys.AUDIO_TRACK, "音轨", audioSubtitle()),
-        settingItem(PlayerSettingKeys.CODEC, "视频编码", session.preferCodec),
+        settingItem(PlayerSettingKeys.CODEC, "视频编码", PlayerCodec.label(session.preferCodec)),
         settingItem(PlayerSettingKeys.PLAYBACK_SPEED, "播放速度", String.format(Locale.US, "%.2fx", session.playbackSpeed)),
         settingItem(PlayerSettingKeys.PLAYBACK_MODE, "播放模式", playbackModeSubtitle()),
         subtitleSupported.takeIf { it }?.let { settingItem(PlayerSettingKeys.SUBTITLE_MENU, "字幕设置", ">") },
@@ -742,15 +743,15 @@ internal fun PlayerActivity.showAudioDialog() {
 }
 
 internal fun PlayerActivity.showCodecDialog() {
-    val options = arrayOf("AVC", "HEVC", "AV1")
-    val current = options.indexOf(session.preferCodec).coerceAtLeast(0)
+    val options = PlayerCodec.selectable.map(PlayerCodec::label)
+    val current = PlayerCodec.selectable.indexOf(PlayerCodec.normalize(session.preferCodec)).coerceAtLeast(0)
     showSettingsChoiceDialog(
         title = "视频编码",
-        options = options.toList(),
+        options = options,
         checkedIndex = current,
     ) { selected ->
         applySessionSettingValue(
-            value = selected,
+            value = PlayerCodec.fromLabel(selected),
             updateSession = { copy(preferCodec = it) },
             syncToGlobal = { playerPreferredCodec = it },
             afterApplied = { reloadStream(keepPosition = true) },

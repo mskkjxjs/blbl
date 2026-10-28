@@ -26,7 +26,6 @@ import blbl.cat3399.core.io.CreateDocumentRequest
 import blbl.cat3399.core.io.DocumentExporter
 import blbl.cat3399.core.log.AppLog
 import blbl.cat3399.core.log.LogExporter
-import blbl.cat3399.core.log.LogUploadClient
 import blbl.cat3399.core.net.BiliClient
 import blbl.cat3399.core.net.BorrowAccountRefresher
 import blbl.cat3399.core.net.BorrowAccountStore
@@ -34,6 +33,7 @@ import blbl.cat3399.core.prefs.AppConfigBackup
 import blbl.cat3399.core.prefs.AppPrefs
 import blbl.cat3399.core.prefs.CustomPageConfig
 import blbl.cat3399.core.prefs.CustomPageTabConfig
+import blbl.cat3399.core.prefs.PlayerCodec
 import blbl.cat3399.core.prefs.PlayerCustomShortcut
 import blbl.cat3399.core.prefs.PlayerCustomShortcutAction
 import blbl.cat3399.core.prefs.PlayerCustomShortcutTrigger
@@ -64,7 +64,6 @@ import blbl.cat3399.ui.MainActivity
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
@@ -96,7 +95,6 @@ class SettingsInteractionHandler(
     private var testUpdateJob: Job? = null
     private var testUpdateCheckJob: Job? = null
     private var exportLogsJob: Job? = null
-    private var uploadLogsJob: Job? = null
     private var clearCacheJob: Job? = null
     private var cacheSizeJob: Job? = null
     private var configTransferJob: Job? = null
@@ -424,137 +422,6 @@ class SettingsInteractionHandler(
         }
     }
 
-    private fun showUploadLogsDialog() {
-        if (uploadLogsJob?.isActive == true) {
-            AppToast.show(activity, "正在上传…")
-            return
-        }
-
-        AppPopup.confirm(
-            context = activity,
-            title = "上传日志",
-            message =
-                "将日志上传给开发者便于排查问题。\n\n" +
-                    "会随日志附带设备、版本、屏幕和非登录配置元数据，不包含登录 Cookie。\n\n" +
-                    "反馈问题时请带上上传成功后显示的文件名。",
-            positiveText = "上传",
-            negativeText = "取消",
-            cancelable = true,
-            onPositive = { startUploadLogs() },
-        )
-    }
-
-    private fun startUploadLogs() {
-        uploadLogsJob?.cancel()
-        val popup =
-            AppPopup.progress(
-                context = activity,
-                title = "上传日志",
-                status = "准备中…",
-                negativeText = "取消",
-                cancelable = false,
-                onNegative = { uploadLogsJob?.cancel() },
-            )
-
-        uploadLogsJob =
-            activity.lifecycleScope.launch {
-                var exportedFile: File? = null
-                try {
-                    val nowMs = System.currentTimeMillis()
-                    val deviceUuid = BiliClient.prefs.deviceUuid
-                    val epochSeconds = (nowMs / 1000L).coerceAtLeast(0L)
-                    val deviceId8 = deviceUuid.replace("-", "").take(8).ifBlank { "unknown00" }
-                    val fileName = "${epochSeconds}-${deviceId8}.zip"
-                    val metaJson = buildUploadMetaJson(nowMs = nowMs, deviceUuid = deviceUuid)
-
-                    popup?.updateProgress(null)
-                    popup?.updateStatus("打包中…")
-                    val export =
-                        withContext(Dispatchers.IO) {
-                            LogExporter.exportToLocalFile(
-                                context = activity,
-                                nowMs = nowMs,
-                                fileNameOverride = fileName,
-                                extras =
-                                    listOf(
-                                        LogExporter.ZipExtra(
-                                            path = "meta.json",
-                                            bytes = metaJson.toByteArray(Charsets.UTF_8),
-                                        ),
-                                    ),
-                            )
-                        }
-                    exportedFile = export.file
-
-                    currentCoroutineContext().ensureActive()
-                    popup?.updateProgress(0)
-                    popup?.updateStatus("上传中… 0%")
-                    var lastPct = -1
-                    var lastUpdateAtMs = 0L
-                    withContext(Dispatchers.IO) {
-                        LogUploadClient.uploadZip(
-                            file = export.file,
-                            fileName = export.fileName,
-                            onProgress = { sentBytes, totalBytes ->
-                                if (totalBytes <= 0L) return@uploadZip
-                                val pct = ((sentBytes.coerceAtLeast(0L) * 100L) / totalBytes).toInt().coerceIn(0, 100)
-                                val now = System.currentTimeMillis()
-                                if (pct == lastPct && now - lastUpdateAtMs < 80L) return@uploadZip
-                                lastPct = pct
-                                lastUpdateAtMs = now
-                                val hint = "${SettingsText.formatBytes(sentBytes)}/${SettingsText.formatBytes(totalBytes)}"
-                                popup?.updateProgress(pct)
-                                popup?.updateStatus("上传中… ${pct}% $hint")
-                            },
-                        )
-                    }
-
-                    popup?.dismiss()
-                    showUploadLogsSuccessPopup(
-                        fileName = export.fileName,
-                    )
-                } catch (_: CancellationException) {
-                    popup?.dismiss()
-                } catch (t: Throwable) {
-                    popup?.dismiss()
-                    AppLog.w("Settings", "upload logs failed", t)
-                    val msg = t.message?.takeIf { it.isNotBlank() } ?: "未知错误"
-                    AppToast.showLong(activity, "上传失败：$msg")
-                } finally {
-                    withContext(NonCancellable + Dispatchers.IO) {
-                        exportedFile?.let { runCatching { it.delete() } }
-                    }
-                }
-            }
-    }
-
-    private fun showUploadLogsSuccessPopup(
-        fileName: String,
-    ) {
-        val body = "文件：$fileName"
-
-        AppPopup.custom(
-            context = activity,
-            title = "上传成功",
-            cancelable = true,
-            actions =
-                listOf(
-                    PopupAction(role = PopupActionRole.NEGATIVE, text = "关闭"),
-                    PopupAction(role = PopupActionRole.NEUTRAL, text = "复制文件名") {
-                        copyToClipboard(label = "日志文件名", text = fileName, toastText = "已复制文件名")
-                    },
-                ),
-            preferredActionRole = PopupActionRole.NEUTRAL,
-            content = { dialogContext ->
-                val tv =
-                    android.view.LayoutInflater.from(dialogContext)
-                        .inflate(blbl.cat3399.R.layout.view_popup_message, null, false) as TextView
-                tv.text = body
-                tv
-            },
-        )
-    }
-
     private fun formatUploadTimestamp(nowMs: Long): String {
         val sdf = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US)
         return runCatching { sdf.format(Date(nowMs)) }.getOrNull()?.takeIf { it.isNotBlank() } ?: nowMs.toString()
@@ -820,10 +687,6 @@ class SettingsInteractionHandler(
                     onFallbackToLocal = { exportLogsToLocalFile(prepared) },
                     logTag = "logs",
                 )
-            }
-
-            SettingId.UploadLogs -> {
-                showUploadLogsDialog()
             }
 
             SettingId.AutoUpdateCheckEnabled -> {
@@ -1474,13 +1337,13 @@ class SettingsInteractionHandler(
             }
 
             SettingId.PlayerPreferredCodec -> {
-                val options = listOf("AVC", "HEVC", "AV1")
+                val options = PlayerCodec.selectable.map(PlayerCodec::label)
                 showChoiceDialog(
                     title = "视频编码(偏好)",
                     items = options,
-                    current = prefs.playerPreferredCodec,
+                    current = PlayerCodec.label(prefs.playerPreferredCodec),
                 ) { selected ->
-                    prefs.playerPreferredCodec = selected
+                    prefs.playerPreferredCodec = PlayerCodec.fromLabel(selected)
                     renderer.refreshSection(entry.id)
                 }
             }
@@ -1714,7 +1577,7 @@ class SettingsInteractionHandler(
             SettingId.ProjectUrl -> showProjectDialog()
 
             SettingId.QqGroup -> {
-                copyToClipboard(label = "QQ交流群", text = SettingsConstants.QQ_GROUP, toastText = "已复制群号：${SettingsConstants.QQ_GROUP}")
+                copyToClipboard(label = "QQ交流群", text = SettingsConstants.QQ_GROUP, toastText = "已复制：${SettingsConstants.QQ_GROUP}")
             }
 
             SettingId.PlayerKernelCheck -> handlePlayerKernelCheck()

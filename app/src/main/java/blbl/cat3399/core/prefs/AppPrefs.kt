@@ -331,8 +331,8 @@ class AppPrefs(context: Context) {
         set(value) = prefs.edit().putInt(KEY_PLAYER_PREFERRED_QN_PORTRAIT, value).apply()
 
     var playerPreferredCodec: String
-        get() = prefs.getString(KEY_PLAYER_CODEC, "AVC") ?: "AVC"
-        set(value) = prefs.edit().putString(KEY_PLAYER_CODEC, value).apply()
+        get() = PlayerCodec.normalize(prefs.getString(KEY_PLAYER_CODEC, PlayerCodec.AUTO))
+        set(value) = prefs.edit().putString(KEY_PLAYER_CODEC, PlayerCodec.normalize(value)).apply()
 
     var playerSeamlessQualitySwitchEnabled: Boolean
         get() = prefs.getBoolean(KEY_PLAYER_SEAMLESS_QUALITY_SWITCH_ENABLED, true)

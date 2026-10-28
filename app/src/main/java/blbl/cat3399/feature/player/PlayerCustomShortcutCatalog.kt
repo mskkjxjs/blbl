@@ -1,6 +1,7 @@
 package blbl.cat3399.feature.player
 
 import blbl.cat3399.core.prefs.AppPrefs
+import blbl.cat3399.core.prefs.PlayerCodec
 import blbl.cat3399.core.prefs.PlayerCustomShortcutAction
 import blbl.cat3399.core.prefs.PlayerCustomShortcutOpenVideoListTarget
 import blbl.cat3399.core.prefs.PlayerPlaybackModes
@@ -180,11 +181,11 @@ internal object PlayerCustomShortcutCatalog {
             }
 
             PlayerCustomShortcutAction.TYPE_SET_CODEC -> {
-                val options = listOf("AVC", "HEVC", "AV1")
+                val options = PlayerCodec.selectable
                 val current = (currentAction as? PlayerCustomShortcutAction.SetCodec)?.codec
-                val checked = options.indexOfFirst { it == current }.takeIf { it >= 0 } ?: 0
+                val checked = options.indexOfFirst { it == PlayerCodec.normalize(current) }.takeIf { it >= 0 } ?: 0
                 PlayerCustomShortcutValuePickerConfig(
-                    choices = options.map { PlayerCustomShortcutValueChoice(it, PlayerCustomShortcutAction.SetCodec(codec = it)) },
+                    choices = options.map { PlayerCustomShortcutValueChoice(PlayerCodec.label(it), PlayerCustomShortcutAction.SetCodec(codec = it)) },
                     checkedIndex = checked,
                 )
             }

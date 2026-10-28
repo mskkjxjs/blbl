@@ -2,6 +2,7 @@ package blbl.cat3399.feature.player
 
 import blbl.cat3399.core.api.video.VideoMediaRequestProfile
 import blbl.cat3399.core.prefs.AppPrefs
+import blbl.cat3399.core.prefs.PlayerCodec
 import blbl.cat3399.feature.player.danmaku.DanmakuSessionSettings
 import blbl.cat3399.feature.player.danmaku.DanmakuFontWeight
 import blbl.cat3399.feature.player.danmaku.DanmakuLaneDensity
@@ -222,7 +223,7 @@ internal fun PlayerSessionSettings.restoreFromEngineSwitchJsonString(raw: String
     }
 
     val speed = optFloat("playbackSpeed", playbackSpeed).coerceIn(0.25f, 4.0f)
-    val codec = obj.optString("preferCodec", preferCodec).trim().ifBlank { preferCodec }
+    val codec = PlayerCodec.normalize(obj.optString("preferCodec", preferCodec))
     val seamlessQualitySwitchEnabled = obj.optBoolean("seamlessQualitySwitchEnabled", seamlessQualitySwitchEnabled)
     val preferAudio = optInt("preferAudioId", preferAudioId).takeIf { it > 0 } ?: preferAudioId
     val tAudio = optInt("targetAudioId", targetAudioId).takeIf { it >= 0 } ?: targetAudioId

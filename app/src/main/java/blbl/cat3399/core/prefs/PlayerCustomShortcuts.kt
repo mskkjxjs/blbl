@@ -317,9 +317,10 @@ internal object PlayerCustomShortcutsStore {
                 if (codec.isBlank()) return null
                 val normalized =
                     when (codec.uppercase()) {
-                        "AVC" -> "AVC"
-                        "HEVC" -> "HEVC"
-                        "AV1" -> "AV1"
+                        PlayerCodec.AUTO, "自动" -> PlayerCodec.AUTO
+                        PlayerCodec.AVC -> PlayerCodec.AVC
+                        PlayerCodec.HEVC -> PlayerCodec.HEVC
+                        PlayerCodec.AV1 -> PlayerCodec.AV1
                         else -> return null
                     }
                 PlayerCustomShortcutAction.SetCodec(codec = normalized)
