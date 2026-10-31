@@ -35,7 +35,28 @@ jobs:
           RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-        run: ./gradlew assembleRelease -PversionName=${{ inputs.version_name }} -PversionCode=${{ github.run_number }}
+          VERSION_NAME: ${{ inputs.version_name }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          CLEAN_VERSION="${VERSION_NAME#v}"
+          NUMERIC_VERSION="${CLEAN_VERSION%%[-+]*}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "${NUMERIC_VERSION}"
+          MAJOR="${MAJOR:-0}"
+          MINOR="${MINOR:-0}"
+          PATCH="${PATCH:-0}"
+          VERSION_CODE=$(( 1000000000 + 10#${MAJOR} * 10000000 + 10#${MINOR} * 100000 + 10#${PATCH} * 1000 + RUN_NUMBER % 1000 ))
+          echo "Building ${CLEAN_VERSION} with versionCode ${VERSION_CODE}"
+          ./gradlew assembleRelease -PversionName="${CLEAN_VERSION}" -PversionCode="${VERSION_CODE}"
+
+          # Android rejects installs whose versionCode is lower than the installed one,
+          # so never ship a small/regressing code (this caused "已安装更高版本" on update).
+          META="app/build/outputs/apk/release/output-metadata.json"
+          APK_CODE="$(jq -r '.elements[0].versionCode' "$META")"
+          APK_NAME="$(jq -r '.elements[0].versionName' "$META")"
+          echo "APK versionName=${APK_NAME} versionCode=${APK_CODE}"
+          [ "$APK_NAME" = "${CLEAN_VERSION}" ]
+          [ "$APK_CODE" = "${VERSION_CODE}" ]
       - name: Upload release APK to R2 (optional)
         env:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
