@@ -25,6 +25,7 @@ object BorrowAccountStore {
         val name: String = "",
         val avatarUrl: String? = null,
         val enabled: Boolean = false,
+        val autoRefreshEnabled: Boolean = true,
         val refreshStatus: String = "",
         val lastCheckedEpochDay: Long = -1L,
         val updatedAtMs: Long = 0L,
@@ -36,7 +37,7 @@ object BorrowAccountStore {
             get() = enabled && configured
 
         val canAutoRefresh: Boolean
-            get() = configured && biliJct.isNotBlank() && refreshToken.isNotBlank()
+            get() = configured && autoRefreshEnabled && biliJct.isNotBlank() && refreshToken.isNotBlank()
 
         val cookieHeader: String
             get() = "SESSDATA=$sessData"
@@ -134,6 +135,14 @@ object BorrowAccountStore {
         return true
     }
 
+    fun setAutoRefreshEnabled(enabled: Boolean) {
+        synchronized(lock) {
+            val cur = current
+            if (cur.autoRefreshEnabled == enabled) return
+            persistLocked(cur.copy(autoRefreshEnabled = enabled, updatedAtMs = System.currentTimeMillis()))
+        }
+    }
+
     fun applyRefresh(
         newSessData: String,
         newBiliJct: String,
@@ -199,6 +208,7 @@ object BorrowAccountStore {
             .put("name", state.name)
             .put("avatarUrl", state.avatarUrl ?: "")
             .put("enabled", state.enabled)
+            .put("autoRefreshEnabled", state.autoRefreshEnabled)
             .put("refreshStatus", state.refreshStatus)
             .put("lastCheckedEpochDay", state.lastCheckedEpochDay)
             .put("updatedAtMs", state.updatedAtMs)
@@ -216,6 +226,7 @@ object BorrowAccountStore {
                 name = obj.optString("name", ""),
                 avatarUrl = obj.optString("avatarUrl", "").takeIf { it.isNotBlank() },
                 enabled = obj.optBoolean("enabled", false),
+                autoRefreshEnabled = obj.optBoolean("autoRefreshEnabled", true),
                 refreshStatus = obj.optString("refreshStatus", ""),
                 lastCheckedEpochDay = obj.optLong("lastCheckedEpochDay", -1L),
                 updatedAtMs = obj.optLong("updatedAtMs", 0L),

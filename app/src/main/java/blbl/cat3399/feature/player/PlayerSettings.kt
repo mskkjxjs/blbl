@@ -36,6 +36,7 @@ internal object PlayerSettingKeys {
     const val AUDIO_TRACK = "audio_track"
     const val CODEC = "codec"
     const val PLAYBACK_SPEED = "playback_speed"
+    const val QUICK_SPEED = "quick_speed"
     const val AUDIO_BALANCE = "audio_balance"
     const val PLAYBACK_MODE = "playback_mode"
     const val SUBTITLE_MENU = "subtitle_menu"
@@ -335,6 +336,7 @@ internal fun PlayerActivity.handleSettingsItemClick(item: PlayerSettingsAdapter.
         PlayerSettingKeys.AUDIO_TRACK -> showAudioDialog()
         PlayerSettingKeys.CODEC -> showCodecDialog()
         PlayerSettingKeys.PLAYBACK_SPEED -> showSpeedDialog()
+        PlayerSettingKeys.QUICK_SPEED -> toggleQuickSpeed()
         PlayerSettingKeys.AUDIO_BALANCE -> showAudioBalanceDialog()
         PlayerSettingKeys.PLAYBACK_MODE -> showPlaybackModeDialog()
         PlayerSettingKeys.SUBTITLE_MENU -> showSubtitleSettingsMenu()
@@ -519,6 +521,7 @@ private fun PlayerActivity.buildRootSettingsItems(
         settingItem(PlayerSettingKeys.AUDIO_TRACK, "音轨", audioSubtitle()),
         settingItem(PlayerSettingKeys.CODEC, "视频编码", PlayerCodec.label(session.preferCodec)),
         settingItem(PlayerSettingKeys.PLAYBACK_SPEED, "播放速度", String.format(Locale.US, "%.2fx", session.playbackSpeed)),
+        settingItem(PlayerSettingKeys.QUICK_SPEED, "快速倍速", quickSpeedSubtitle()),
         settingItem(PlayerSettingKeys.PLAYBACK_MODE, "播放模式", playbackModeSubtitle()),
         subtitleSupported.takeIf { it }?.let { settingItem(PlayerSettingKeys.SUBTITLE_MENU, "字幕设置", ">") },
         settingItem(PlayerSettingKeys.DANMAKU_MENU, "弹幕设置", ">"),
@@ -775,6 +778,24 @@ internal fun PlayerActivity.showSpeedDialog() {
             afterApplied = { player?.setPlaybackSpeed(it) },
         )
     }
+}
+
+internal fun PlayerActivity.isQuickSpeedOn(): Boolean {
+    return abs(session.playbackSpeed - holdSeekSpeed()) < 0.01f
+}
+
+internal fun PlayerActivity.quickSpeedSubtitle(): String {
+    val holdText = holdSeekSpeedText(holdSeekSpeed())
+    return if (isQuickSpeedOn()) "开 · ${holdText}x" else "关（长按 ${holdText}x）"
+}
+
+private fun PlayerActivity.toggleQuickSpeed() {
+    val next = if (isQuickSpeedOn()) 1.0f else holdSeekSpeed()
+    applySessionSettingValue(
+        value = next,
+        updateSession = { copy(playbackSpeed = it) },
+        afterApplied = { player?.setPlaybackSpeed(it) },
+    )
 }
 
 internal fun PlayerActivity.showAudioBalanceDialog() {

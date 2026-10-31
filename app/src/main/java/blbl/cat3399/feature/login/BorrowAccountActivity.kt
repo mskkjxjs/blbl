@@ -45,6 +45,10 @@ class BorrowAccountActivity : BaseActivity() {
         binding.btnBack.setOnClickListener { finish() }
 
         prefillFields()
+        binding.switchAutoRefresh.setOnCheckedChangeListener { _, checked ->
+            BorrowAccountStore.setAutoRefreshEnabled(checked)
+            renderState()
+        }
         if (BorrowAccountStore.state().configured) {
             renderState(statusOverride = "小号已配置；如需更换，可扫码或直接修改下方三项 Cookie 后保存")
         } else {
@@ -83,6 +87,7 @@ class BorrowAccountActivity : BaseActivity() {
         binding.etSessdata.setText(st.sessData)
         binding.etBiliJct.setText(st.biliJct)
         binding.etAcTime.setText(st.refreshToken)
+        binding.switchAutoRefresh.isChecked = st.autoRefreshEnabled
     }
 
     private fun renderState(statusOverride: String? = null) {
@@ -110,6 +115,7 @@ class BorrowAccountActivity : BaseActivity() {
                 append(
                     when {
                         !st.configured -> "未配置"
+                        !st.autoRefreshEnabled -> "已关闭（多设备共用 Cookie 时建议关闭）"
                         !st.canAutoRefresh -> "缺少 bili_jct / ac_time_value"
                         st.refreshStatus.isNotBlank() -> st.refreshStatus
                         else -> "已就绪（每日检查）"
@@ -303,9 +309,21 @@ class BorrowAccountActivity : BaseActivity() {
         }
 
         val after = BorrowAccountStore.state()
-        val message = if (after.canAutoRefresh) "小号登录成功，已启用取流与自动续期" else "小号已保存；缺少续期凭证，无法自动续期"
+        val message =
+            when {
+                !after.autoRefreshEnabled -> "小号登录成功，自动续期已关闭"
+                after.canAutoRefresh -> "小号登录成功，已启用取流与自动续期"
+                else -> "小号已保存；缺少续期凭证，无法自动续期"
+            }
         AppToast.show(this, message)
-        renderState(statusOverride = if (after.canAutoRefresh) "小号已就绪" else "小号已保存（无自动续期）")
+        renderState(
+            statusOverride =
+                when {
+                    !after.autoRefreshEnabled -> "小号已就绪（自动续期已关闭）"
+                    after.canAutoRefresh -> "小号已就绪"
+                    else -> "小号已保存（无自动续期）"
+                },
+        )
     }
 
     private suspend fun checkNav(cookieHeader: String): Pair<NavCheck, NavProfile?> {

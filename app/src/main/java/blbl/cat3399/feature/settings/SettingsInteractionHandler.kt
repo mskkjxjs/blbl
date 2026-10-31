@@ -146,6 +146,10 @@ class SettingsInteractionHandler(
             AppToast.show(activity, "请先配置小号凭证")
             return
         }
+        if (!st.autoRefreshEnabled) {
+            AppToast.show(activity, "自动续期已关闭，请在取流设置中开启")
+            return
+        }
         if (!st.canAutoRefresh) {
             AppToast.show(activity, "缺少 bili_jct 或 ac_time_value，无法自动续期")
             return
