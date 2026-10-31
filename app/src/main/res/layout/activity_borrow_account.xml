@@ -203,25 +203,6 @@
                 android:textColor="?attr/blblOnPageBackdropSecondary"
                 android:textSize="12sp" />
 
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/switch_auto_refresh"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:focusable="true"
-                android:text="自动续期（每日检查并轮换 Cookie）"
-                android:textColor="?attr/blblOnPageBackdrop"
-                android:textSize="14sp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:lineSpacingExtra="2dp"
-                android:text="多设备同时使用同一个 Cookie 时请关闭自动续期：任一设备续期后，其他设备保存的 SESSDATA 会立即失效，只能重新登录。"
-                android:textColor="?attr/blblOnPageBackdropSecondary"
-                android:textSize="12sp" />
-
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_save"
                 android:layout_width="match_parent"

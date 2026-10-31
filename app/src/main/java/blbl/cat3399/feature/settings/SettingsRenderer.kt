@@ -664,7 +664,6 @@ class SettingsRenderer(
         val st = BorrowAccountStore.state()
         return when {
             !st.configured -> "未配置"
-            !st.autoRefreshEnabled -> "已关闭（多设备共用时建议关闭）"
             !st.canAutoRefresh -> "缺少 bili_jct / ac_time_value"
             st.refreshStatus.isNotBlank() -> st.refreshStatus
             else -> "已就绪（每日检查）"
