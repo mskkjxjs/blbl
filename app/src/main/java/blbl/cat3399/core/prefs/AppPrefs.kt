@@ -493,6 +493,10 @@ class AppPrefs(context: Context) {
         get() = prefs.getBoolean(KEY_PLAYER_PERSISTENT_QUICK_SPEED_BUTTON_ENABLED, true)
         set(value) = prefs.edit().putBoolean(KEY_PLAYER_PERSISTENT_QUICK_SPEED_BUTTON_ENABLED, value).apply()
 
+    var playerQuickSpeedEnabled: Boolean
+        get() = prefs.getBoolean(KEY_PLAYER_QUICK_SPEED_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_PLAYER_QUICK_SPEED_ENABLED, value).apply()
+
     var playerCommentsDoubleTapEnabled: Boolean
         get() = prefs.getBoolean(KEY_PLAYER_COMMENTS_DOUBLE_TAP_ENABLED, true)
         set(value) = prefs.edit().putBoolean(KEY_PLAYER_COMMENTS_DOUBLE_TAP_ENABLED, value).apply()
@@ -1196,6 +1200,7 @@ class AppPrefs(context: Context) {
         private const val KEY_PLAYER_DOUBLE_TAP_PAUSE_ENABLED = "player_double_tap_pause_enabled"
         private const val KEY_PLAYER_PERSISTENT_COMMENTS_BUTTON_ENABLED = "player_persistent_comments_button_enabled"
         private const val KEY_PLAYER_PERSISTENT_QUICK_SPEED_BUTTON_ENABLED = "player_persistent_quick_speed_button_enabled"
+        private const val KEY_PLAYER_QUICK_SPEED_ENABLED = "player_quick_speed_enabled"
         private const val KEY_PLAYER_COMMENTS_DOUBLE_TAP_ENABLED = "player_comments_double_tap_enabled"
         private const val KEY_PLAYER_COMMENTS_LONG_PRESS_ENABLED = "player_comments_long_press_enabled"
         private const val KEY_PLAYER_COMMENTS_SWIPE_ENABLED = "player_comments_swipe_enabled"
@@ -1310,6 +1315,7 @@ class AppPrefs(context: Context) {
                 KEY_PLAYER_DOUBLE_TAP_PAUSE_ENABLED,
                 KEY_PLAYER_PERSISTENT_COMMENTS_BUTTON_ENABLED,
                 KEY_PLAYER_PERSISTENT_QUICK_SPEED_BUTTON_ENABLED,
+                KEY_PLAYER_QUICK_SPEED_ENABLED,
                 KEY_PLAYER_COMMENTS_DOUBLE_TAP_ENABLED,
                 KEY_PLAYER_COMMENTS_LONG_PRESS_ENABLED,
                 KEY_PLAYER_COMMENTS_SWIPE_ENABLED,

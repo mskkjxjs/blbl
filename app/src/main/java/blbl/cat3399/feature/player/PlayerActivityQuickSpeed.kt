@@ -2,6 +2,7 @@ package blbl.cat3399.feature.player
 
 import androidx.core.content.ContextCompat
 import blbl.cat3399.R
+import blbl.cat3399.core.net.BiliClient
 import java.util.Locale
 import kotlin.math.abs
 
@@ -36,6 +37,7 @@ internal fun PlayerActivity.setQuickSpeedEnabled(
         updateSession = { copy(playbackSpeed = it) },
         afterApplied = { speed ->
             quickSpeedActive = enabled
+            BiliClient.prefs.playerQuickSpeedEnabled = enabled
             player?.setPlaybackSpeed(speed)
             if (showHint) {
                 showSeekHint(
@@ -56,10 +58,30 @@ internal fun PlayerActivity.setQuickSpeedEnabled(
 internal fun PlayerActivity.applyManualPlaybackSpeed(speed: Float) {
     if (quickSpeedActive) {
         quickSpeedActive = false
+        BiliClient.prefs.playerQuickSpeedEnabled = false
         updateQuickSpeedUi()
     }
     player?.setPlaybackSpeed(speed)
 }
+
+/** Re-applies the remembered quick-speed state when a new video is opened. */
+internal fun PlayerActivity.applyInitialQuickSpeed() {
+    if (!BiliClient.prefs.playerQuickSpeedEnabled) return
+    val hold = holdSeekSpeed()
+    val current = session.playbackSpeed.takeIf { it.isFinite() }?.coerceIn(PLAYBACK_SPEED_MIN, PLAYBACK_SPEED_MAX) ?: 1.0f
+    quickSpeedRestoreSpeed =
+        if (abs(current - hold) > 0.001f) {
+            current
+        } else {
+            BiliClient.prefs.playerSpeed.takeIf { it.isFinite() }?.coerceIn(PLAYBACK_SPEED_MIN, PLAYBACK_SPEED_MAX) ?: 1.0f
+        }
+    quickSpeedActive = true
+    session = session.copy(playbackSpeed = hold)
+}
+
+/** The normal playback speed, kept separate from the temporary quick-speed value. */
+internal fun PlayerActivity.quickSpeedBaseSpeed(): Float =
+    if (quickSpeedActive) quickSpeedRestoreSpeed else session.playbackSpeed
 
 internal fun PlayerActivity.updateQuickSpeedButtonUi() {
     binding.btnQuickSpeed.imageTintList =

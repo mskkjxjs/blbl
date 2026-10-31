@@ -520,7 +520,7 @@ private fun PlayerActivity.buildRootSettingsItems(
         settingItem(PlayerSettingKeys.RESOLUTION, "分辨率", resolutionSubtitle()),
         settingItem(PlayerSettingKeys.AUDIO_TRACK, "音轨", audioSubtitle()),
         settingItem(PlayerSettingKeys.CODEC, "视频编码", PlayerCodec.label(session.preferCodec)),
-        settingItem(PlayerSettingKeys.PLAYBACK_SPEED, "播放速度", String.format(Locale.US, "%.2fx", session.playbackSpeed)),
+        settingItem(PlayerSettingKeys.PLAYBACK_SPEED, "播放速度", String.format(Locale.US, "%.2fx", quickSpeedBaseSpeed())),
         settingItem(PlayerSettingKeys.QUICK_SPEED, "快速倍速", quickSpeedSubtitle()),
         settingItem(PlayerSettingKeys.PLAYBACK_MODE, "播放模式", playbackModeSubtitle()),
         subtitleSupported.takeIf { it }?.let { settingItem(PlayerSettingKeys.SUBTITLE_MENU, "字幕设置", ">") },
@@ -764,7 +764,7 @@ internal fun PlayerActivity.showCodecDialog() {
 
 internal fun PlayerActivity.showSpeedDialog() {
     val options = PlaybackSettingChoices.playbackSpeeds
-    val current = options.indexOf(session.playbackSpeed).takeIf { it >= 0 } ?: 2
+    val current = options.indexOf(quickSpeedBaseSpeed()).takeIf { it >= 0 } ?: 2
     showSettingsChoiceDialog(
         title = "播放速度",
         options = options,

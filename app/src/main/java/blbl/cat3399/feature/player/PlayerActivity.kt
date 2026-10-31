@@ -839,6 +839,7 @@ class PlayerActivity : BaseActivity() {
         if (sessionOverrideJson != null) {
             session = session.restoreFromEngineSwitchJsonString(sessionOverrideJson)
         }
+        applyInitialQuickSpeed()
 
         val desiredEngineKind = session.engineKind
         val engineKind =
