@@ -551,6 +551,20 @@
                 app:tint="@color/player_button_tint" />
 
             <ImageButton
+                android:id="@+id/btn_parts_panel"
+                android:layout_width="?attr/playerOsdButtonTargetSize"
+                android:layout_height="?attr/playerOsdButtonTargetSize"
+                android:layout_marginEnd="?attr/playerOsdGap"
+                android:background="?attr/blblFocusBgRound"
+                android:contentDescription="@string/player_btn_parts_panel"
+                android:focusable="true"
+                android:padding="?attr/playerOsdPadNormal"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_player_parts"
+                android:visibility="gone"
+                app:tint="@color/player_button_tint" />
+
+            <ImageButton
                 android:id="@+id/btn_detail"
                 android:layout_width="?attr/playerOsdButtonTargetSize"
                 android:layout_height="?attr/playerOsdButtonTargetSize"
@@ -800,14 +814,31 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
-                android:id="@+id/tab_page_list"
+                android:id="@+id/tab_recommend_list"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_player_list_tab_chip"
                 android:clickable="true"
                 android:focusable="true"
-                android:nextFocusLeft="@id/tab_page_list"
-                android:nextFocusRight="@id/tab_parts_list"
+                android:nextFocusLeft="@id/tab_recommend_list"
+                android:nextFocusRight="@id/tab_page_list"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:stateListAnimator="@animator/blbl_focus_scale"
+                android:text="@string/player_list_tab_recommend"
+                android:textColor="@color/player_list_tab_text"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tab_page_list"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_player_list_tab_chip"
+                android:clickable="true"
+                android:focusable="true"
+                android:nextFocusLeft="@id/tab_recommend_list"
+                android:nextFocusRight="@id/tab_page_list"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="6dp"
                 android:stateListAnimator="@animator/blbl_focus_scale"
@@ -815,39 +846,23 @@
                 android:textColor="@color/player_list_tab_text"
                 android:textSize="14sp" />
 
+            <!-- Parts panel header: shown only when the dedicated parts button opened the panel. -->
             <TextView
-                android:id="@+id/tab_parts_list"
+                android:id="@+id/tab_parts_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
                 android:background="@drawable/bg_player_list_tab_chip"
-                android:clickable="true"
                 android:focusable="true"
-                android:nextFocusLeft="@id/tab_page_list"
-                android:nextFocusRight="@id/tab_recommend_list"
+                android:nextFocusLeft="@id/tab_parts_label"
+                android:nextFocusRight="@id/tab_parts_label"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="6dp"
                 android:stateListAnimator="@animator/blbl_focus_scale"
                 android:text="@string/player_list_tab_parts"
                 android:textColor="@color/player_list_tab_text"
-                android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/tab_recommend_list"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:background="@drawable/bg_player_list_tab_chip"
-                android:clickable="true"
-                android:focusable="true"
-                android:nextFocusLeft="@id/tab_parts_list"
-                android:nextFocusRight="@id/tab_recommend_list"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="6dp"
-                android:stateListAnimator="@animator/blbl_focus_scale"
-                android:text="@string/player_list_tab_recommend"
-                android:textColor="@color/player_list_tab_text"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:visibility="gone" />
 
         </LinearLayout>
 

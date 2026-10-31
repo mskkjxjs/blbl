@@ -97,6 +97,7 @@
 
     <string name="player_btn_subtitle">字幕</string>
     <string name="player_btn_list_panel">列表</string>
+    <string name="player_btn_parts_panel">合集/分P</string>
     <string name="player_list_tab_page">视频列表</string>
     <string name="player_list_tab_parts">合集/分P</string>
     <string name="player_list_tab_recommend">推荐</string>

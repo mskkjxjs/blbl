@@ -2097,6 +2097,11 @@ class PlayerActivity : BaseActivity() {
             setControlsVisible(true)
         }
 
+        binding.btnPartsPanel.setOnClickListener {
+            showPartsPanelFromButton()
+            setControlsVisible(true)
+        }
+
         binding.btnSponsorSubmit.setOnClickListener {
             openSponsorSubmitPanel()
         }

@@ -35,6 +35,7 @@ internal fun PlayerActivity.applyOsdButtonsVisibility() {
     binding.btnCoin.visibility = if (enabled.contains(AppPrefs.PLAYER_OSD_BTN_COIN)) View.VISIBLE else View.GONE
     binding.btnFav.visibility = if (enabled.contains(AppPrefs.PLAYER_OSD_BTN_FAV)) View.VISIBLE else View.GONE
     binding.btnListPanel.visibility = if (enabled.contains(AppPrefs.PLAYER_OSD_BTN_LIST_PANEL)) View.VISIBLE else View.GONE
+    binding.btnPartsPanel.visibility = if (enabled.contains(AppPrefs.PLAYER_OSD_BTN_PARTS_PANEL)) View.VISIBLE else View.GONE
     binding.btnSponsorSubmit.visibility = if (enabled.contains(AppPrefs.PLAYER_OSD_BTN_SPONSOR_SUBMIT)) View.VISIBLE else View.GONE
     binding.btnAdvanced.visibility = if (enabled.contains(AppPrefs.PLAYER_OSD_BTN_ADVANCED)) View.VISIBLE else View.GONE
     binding.btnClosePlayer.visibility = if (enabled.contains(AppPrefs.PLAYER_OSD_BTN_CLOSE_PLAYER)) View.VISIBLE else View.GONE
@@ -392,6 +393,10 @@ internal fun PlayerActivity.updatePlaylistControls() {
 
     binding.btnListPanel.isEnabled = hasListPanel
     binding.btnListPanel.alpha = if (hasListPanel) 1.0f else 0.35f
+
+    val hasPartsPanel = partsListItems.isNotEmpty() || partsListFetchJob?.isActive == true
+    binding.btnPartsPanel.isEnabled = hasPartsPanel
+    binding.btnPartsPanel.alpha = if (hasPartsPanel) 1.0f else 0.35f
 }
 
 internal fun PlayerActivity.updateUpButton() {

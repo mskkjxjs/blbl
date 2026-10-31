@@ -31,7 +31,6 @@ internal fun PlayerActivity.initBottomCardPanel() {
     binding.recommendPanel.setOnClickListener { hideBottomCardPanel() }
 
     binding.tabPageList.setOnClickListener { selectBottomPanelKind(PlayerVideoListKind.PAGE, requestFocus = true) }
-    binding.tabPartsList.setOnClickListener { selectBottomPanelKind(PlayerVideoListKind.PARTS, requestFocus = true) }
     binding.tabRecommendList.setOnClickListener { selectBottomPanelKind(PlayerVideoListKind.RECOMMEND, requestFocus = true) }
 
     fun switchTabOnFocus(kind: PlayerVideoListKind) {
@@ -44,14 +43,11 @@ internal fun PlayerActivity.initBottomCardPanel() {
     binding.tabPageList.setOnFocusChangeListener { _, hasFocus ->
         if (hasFocus) switchTabOnFocus(PlayerVideoListKind.PAGE)
     }
-    binding.tabPartsList.setOnFocusChangeListener { _, hasFocus ->
-        if (hasFocus) switchTabOnFocus(PlayerVideoListKind.PARTS)
-    }
     binding.tabRecommendList.setOnFocusChangeListener { _, hasFocus ->
         if (hasFocus) switchTabOnFocus(PlayerVideoListKind.RECOMMEND)
     }
 
-    listOf(binding.tabPageList, binding.tabPartsList, binding.tabRecommendList).forEach { tab ->
+    listOf(binding.tabRecommendList, binding.tabPageList, binding.tabPartsLabel).forEach { tab ->
         tab.setOnKeyListener { _, keyCode, event ->
             if (!isBottomCardPanelVisible()) return@setOnKeyListener false
             if (event.action != KeyEvent.ACTION_DOWN) return@setOnKeyListener false
@@ -201,8 +197,15 @@ private fun PlayerActivity.currentBottomPanelPlayingIndex(): Int {
 
 internal fun PlayerActivity.showListPanelFromButton() {
     showListPanel(
-        kind = preferredListPanelKindForPlaybackMode(),
+        kind = PlayerVideoListKind.RECOMMEND,
         preferContentFocus = false,
+    )
+}
+
+internal fun PlayerActivity.showPartsPanelFromButton() {
+    showListPanel(
+        kind = PlayerVideoListKind.PARTS,
+        preferContentFocus = true,
     )
 }
 
@@ -252,8 +255,14 @@ private fun PlayerActivity.selectBottomPanelKind(kind: PlayerVideoListKind, requ
 }
 
 private fun PlayerActivity.syncBottomPanelTabUi(kind: PlayerVideoListKind) {
+    val showTabs = kind != PlayerVideoListKind.PARTS
+    val tabsVisibility = if (showTabs) View.VISIBLE else View.GONE
+    binding.tabRecommendList.visibility = tabsVisibility
+    binding.tabPageList.visibility = tabsVisibility
+    binding.tabPartsLabel.visibility = if (showTabs) View.GONE else View.VISIBLE
+    binding.tabPartsLabel.isSelected = !showTabs
+
     binding.tabPageList.isSelected = kind == PlayerVideoListKind.PAGE
-    binding.tabPartsList.isSelected = kind == PlayerVideoListKind.PARTS
     binding.tabRecommendList.isSelected = kind == PlayerVideoListKind.RECOMMEND
 }
 
@@ -493,7 +502,7 @@ private fun PlayerActivity.shouldRequestBottomPanelContentFocusAfterAsyncUpdate(
 private fun PlayerActivity.currentBottomPanelTabView(): View {
     return when (bottomCardPanelKind) {
         PlayerVideoListKind.PAGE -> binding.tabPageList
-        PlayerVideoListKind.PARTS -> binding.tabPartsList
+        PlayerVideoListKind.PARTS -> binding.tabPartsLabel
         PlayerVideoListKind.RECOMMEND -> binding.tabRecommendList
     }
 }

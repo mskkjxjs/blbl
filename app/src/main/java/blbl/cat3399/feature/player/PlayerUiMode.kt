@@ -632,7 +632,7 @@ internal object PlayerUiMode {
         applyPadding(binding.listPanelTabRow, base.tabRowPadding)
 
         applyTextView(binding.tabPageList, base.tabPage)
-        applyTextView(binding.tabPartsList, base.tabParts)
+        applyTextView(binding.tabPartsLabel, base.tabParts)
         applyTextView(binding.tabRecommendList, base.tabRecommend)
 
         applyMargins(binding.listPanelBody, base.bodyMargins)
@@ -783,7 +783,7 @@ internal object PlayerUiMode {
             tabRowMargins = captureMargins(binding.listPanelTabRow),
             tabRowPadding = capturePadding(binding.listPanelTabRow),
             tabPage = captureTextViewMetrics(binding.tabPageList),
-            tabParts = captureTextViewMetrics(binding.tabPartsList),
+            tabParts = captureTextViewMetrics(binding.tabPartsLabel),
             tabRecommend = captureTextViewMetrics(binding.tabRecommendList),
             bodyMargins = captureMargins(binding.listPanelBody),
             bodyRadiusPx = binding.listPanelBody.radius,

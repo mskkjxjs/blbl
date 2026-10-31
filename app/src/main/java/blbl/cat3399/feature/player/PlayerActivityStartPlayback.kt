@@ -914,8 +914,11 @@ private fun PlayerActivity.schedulePgcPartsListFetch(
                     AppToast.show(this@schedulePgcPartsListFetch, msg)
                 }
             } finally {
-                if (token == partsListFetchToken) partsListFetchJob = null
-                if (token == partsListFetchToken) notifyPartsListPanelChanged()
+                if (token == partsListFetchToken) {
+                    partsListFetchJob = null
+                    updatePlaylistControls()
+                    notifyPartsListPanelChanged()
+                }
             }
         }
     notifyPartsListPanelChanged()

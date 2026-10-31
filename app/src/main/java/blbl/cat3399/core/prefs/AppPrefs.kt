@@ -881,7 +881,8 @@ class AppPrefs(context: Context) {
             val stored = loadStringList(KEY_PLAYER_OSD_BUTTONS)
             val normalized = normalizePlayerOsdButtons(stored)
             val withDetail = migratePlayerOsdDetailButtonIfNeeded(normalized)
-            return migratePlayerOsdQuickSpeedButtonIfNeeded(withDetail)
+            val withQuickSpeed = migratePlayerOsdQuickSpeedButtonIfNeeded(withDetail)
+            return migratePlayerOsdPartsPanelButtonIfNeeded(withQuickSpeed)
         }
         set(value) {
             saveStringList(KEY_PLAYER_OSD_BUTTONS, normalizePlayerOsdButtons(value))
@@ -889,6 +890,7 @@ class AppPrefs(context: Context) {
             prefs.edit()
                 .putBoolean(KEY_PLAYER_OSD_BUTTONS_DETAIL_MIGRATED, true)
                 .putBoolean(KEY_PLAYER_OSD_BUTTONS_QUICK_SPEED_MIGRATED, true)
+                .putBoolean(KEY_PLAYER_OSD_BUTTONS_PARTS_PANEL_MIGRATED, true)
                 .apply()
         }
 
@@ -1068,6 +1070,22 @@ class AppPrefs(context: Context) {
         return migrated
     }
 
+    private fun migratePlayerOsdPartsPanelButtonIfNeeded(normalized: List<String>): List<String> {
+        if (prefs.getBoolean(KEY_PLAYER_OSD_BUTTONS_PARTS_PANEL_MIGRATED, false)) return normalized
+        prefs.edit().putBoolean(KEY_PLAYER_OSD_BUTTONS_PARTS_PANEL_MIGRATED, true).apply()
+        if (normalized.contains(PLAYER_OSD_BTN_PARTS_PANEL)) return normalized
+
+        val listPanelIndex = normalized.indexOf(PLAYER_OSD_BTN_LIST_PANEL)
+        val migrated =
+            if (listPanelIndex >= 0) {
+                normalized.toMutableList().apply { add(listPanelIndex + 1, PLAYER_OSD_BTN_PARTS_PANEL) }
+            } else {
+                normalized + PLAYER_OSD_BTN_PARTS_PANEL
+            }
+        saveStringList(KEY_PLAYER_OSD_BUTTONS, migrated)
+        return migrated
+    }
+
     private fun normalizePlayerOsdButtons(value: List<String>): List<String> {
         val out = ArrayList<String>(value.size + 1)
         val seen = HashSet<String>(value.size + 1)
@@ -1239,6 +1257,7 @@ class AppPrefs(context: Context) {
         private const val KEY_PLAYER_OSD_BUTTONS = "player_osd_buttons"
         private const val KEY_PLAYER_OSD_BUTTONS_DETAIL_MIGRATED = "player_osd_buttons_detail_migrated"
         private const val KEY_PLAYER_OSD_BUTTONS_QUICK_SPEED_MIGRATED = "player_osd_buttons_quick_speed_migrated"
+        private const val KEY_PLAYER_OSD_BUTTONS_PARTS_PANEL_MIGRATED = "player_osd_buttons_parts_panel_migrated"
         private const val KEY_PLAYER_CUSTOM_SHORTCUTS = "player_custom_shortcuts"
         private const val KEY_GRID_SPAN = "grid_span"
         private const val KEY_DYNAMIC_GRID_SPAN = "dynamic_grid_span"
@@ -1508,6 +1527,7 @@ class AppPrefs(context: Context) {
         const val PLAYER_OSD_BTN_COIN = "coin"
         const val PLAYER_OSD_BTN_FAV = "fav"
         const val PLAYER_OSD_BTN_LIST_PANEL = "list_panel"
+        const val PLAYER_OSD_BTN_PARTS_PANEL = "parts_panel"
         const val PLAYER_OSD_BTN_SPONSOR_SUBMIT = "sponsor_submit"
         const val PLAYER_OSD_BTN_ADVANCED = "advanced"
         const val PLAYER_OSD_BTN_CLOSE_PLAYER = "close_player"
@@ -1524,6 +1544,7 @@ class AppPrefs(context: Context) {
                 PLAYER_OSD_BTN_SPONSOR_SUBMIT,
                 PLAYER_OSD_BTN_UP,
                 PLAYER_OSD_BTN_LIST_PANEL,
+                PLAYER_OSD_BTN_PARTS_PANEL,
                 PLAYER_OSD_BTN_ADVANCED,
                 PLAYER_OSD_BTN_CLOSE_PLAYER,
             )
@@ -1543,6 +1564,7 @@ class AppPrefs(context: Context) {
                 PLAYER_OSD_BTN_COIN,
                 PLAYER_OSD_BTN_FAV,
                 PLAYER_OSD_BTN_LIST_PANEL,
+                PLAYER_OSD_BTN_PARTS_PANEL,
                 PLAYER_OSD_BTN_SPONSOR_SUBMIT,
                 PLAYER_OSD_BTN_ADVANCED,
                 PLAYER_OSD_BTN_CLOSE_PLAYER,
