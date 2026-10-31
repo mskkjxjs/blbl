@@ -255,7 +255,7 @@ class SettingsRenderer(
                         SettingId.BorrowRefresh,
                         "续期状态",
                         borrowAccountRefreshText(),
-                        "仅显示上次检查结果；如需立即续期，请进入“小号帐号”页点击手动续期",
+                        "仅显示上次检查结果；如需立即续期，请进入“小号帐号”页点击手动续期；多设备共用 Cookie 时请勿开启自动续期",
                     ),
                     SettingEntry(
                         SettingId.BorrowClear,

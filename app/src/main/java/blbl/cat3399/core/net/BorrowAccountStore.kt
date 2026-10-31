@@ -15,6 +15,7 @@ object BorrowAccountStore {
     private const val TAG = "BorrowAccountStore"
     private const val PREFS = "blbl_borrow_account"
     private const val KEY_STATE = "state"
+    private const val KEY_AUTO_REFRESH_OFF_MIGRATED = "auto_refresh_default_off_migrated"
     private const val MAX_VALUE_LENGTH = 2048
 
     data class State(
@@ -25,7 +26,7 @@ object BorrowAccountStore {
         val name: String = "",
         val avatarUrl: String? = null,
         val enabled: Boolean = false,
-        val autoRefreshEnabled: Boolean = true,
+        val autoRefreshEnabled: Boolean = false,
         val refreshStatus: String = "",
         val lastCheckedEpochDay: Long = -1L,
         val updatedAtMs: Long = 0L,
@@ -66,7 +67,21 @@ object BorrowAccountStore {
         val p = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         synchronized(lock) {
             prefs = p
-            current = parse(p.getString(KEY_STATE, null))
+            var loaded = parse(p.getString(KEY_STATE, null))
+            if (!p.getBoolean(KEY_AUTO_REFRESH_OFF_MIGRATED, false)) {
+                // Auto refresh used to default to on; turn it off once so existing installs don't
+                // rewrite cookies shared with other devices.
+                if (loaded.autoRefreshEnabled) {
+                    loaded = loaded.copy(autoRefreshEnabled = false)
+                    p.edit()
+                        .putString(KEY_STATE, serialize(loaded).toString())
+                        .putBoolean(KEY_AUTO_REFRESH_OFF_MIGRATED, true)
+                        .apply()
+                } else {
+                    p.edit().putBoolean(KEY_AUTO_REFRESH_OFF_MIGRATED, true).apply()
+                }
+            }
+            current = loaded
         }
         AppLog.i(TAG, "init configured=${current.configured} active=${current.active} canRefresh=${current.canAutoRefresh}")
     }
@@ -231,7 +246,7 @@ object BorrowAccountStore {
                 name = obj.optString("name", ""),
                 avatarUrl = obj.optString("avatarUrl", "").takeIf { it.isNotBlank() },
                 enabled = obj.optBoolean("enabled", false),
-                autoRefreshEnabled = obj.optBoolean("autoRefreshEnabled", true),
+                autoRefreshEnabled = obj.optBoolean("autoRefreshEnabled", false),
                 refreshStatus = obj.optString("refreshStatus", ""),
                 lastCheckedEpochDay = obj.optLong("lastCheckedEpochDay", -1L),
                 updatedAtMs = obj.optLong("updatedAtMs", 0L),

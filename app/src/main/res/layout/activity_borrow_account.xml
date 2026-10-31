@@ -212,7 +212,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:lineSpacingExtra="2dp"
-                android:text="关闭后仅在播放时使用当前凭证取流，不再自动刷新；多设备共用同一 Cookie 时建议关闭。需要时可点击下方“手动续期”。"
+                android:text="默认关闭。若多个设备同时使用此 Cookie，请不要开启自动续期，续期刷新会导致其他设备的登录状态失效。需要时可点击下方“手动续期”。"
                 android:textColor="?attr/blblOnPageBackdropSecondary"
                 android:textSize="12sp" />
 

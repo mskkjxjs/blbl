@@ -50,6 +50,9 @@ class BorrowAccountActivity : BaseActivity() {
         prefillFields()
         binding.switchAutoRefresh.setOnCheckedChangeListener { _, checked ->
             BorrowAccountStore.setAutoRefreshEnabled(checked)
+            if (checked) {
+                AppToast.show(this, "多设备同时使用此 Cookie 时请勿开启自动续期")
+            }
             renderState()
         }
         if (BorrowAccountStore.state().configured) {
