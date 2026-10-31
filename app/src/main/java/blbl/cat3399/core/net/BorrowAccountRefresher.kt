@@ -36,7 +36,7 @@ object BorrowAccountRefresher {
     /** Cheap once-per-day check, safe to call before every playurl request. */
     suspend fun ensureFreshForPlayback() {
         val st = BorrowAccountStore.state()
-        if (!st.active || !st.canAutoRefresh) return
+        if (!st.active || !st.autoRefreshActive) return
         try {
             refreshIfNeeded(force = false)
         } catch (t: Throwable) {
@@ -49,6 +49,9 @@ object BorrowAccountRefresher {
         mutex.withLock {
             val st = BorrowAccountStore.state()
             if (!st.configured) return@withLock RefreshResult(ok = false, refreshed = false, message = "未配置小号凭证")
+            if (!force && !st.autoRefreshEnabled) {
+                return@withLock RefreshResult(ok = true, refreshed = false, message = "自动续期已关闭")
+            }
             if (!st.canAutoRefresh) {
                 return@withLock RefreshResult(
                     ok = false,

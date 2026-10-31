@@ -194,6 +194,28 @@
                 android:textColorHint="?attr/blblOnPageBackdropSecondary"
                 android:textSize="15sp" />
 
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switch_auto_refresh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:background="?attr/blblFocusBgRound"
+                android:focusable="true"
+                android:minHeight="48dp"
+                android:paddingHorizontal="12dp"
+                android:text="自动续期"
+                android:textColor="?attr/blblOnPageBackdrop"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:lineSpacingExtra="2dp"
+                android:text="关闭后仅在播放时使用当前凭证取流，不再自动刷新；多设备共用同一 Cookie 时建议关闭。需要时可在取流设置中手动检查。"
+                android:textColor="?attr/blblOnPageBackdropSecondary"
+                android:textSize="12sp" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

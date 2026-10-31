@@ -255,7 +255,7 @@ class SettingsRenderer(
                         SettingId.BorrowRefresh,
                         "续期状态",
                         borrowAccountRefreshText(),
-                        "凭证每日自动检查一次；可在此立即检查",
+                        "凭证每日自动检查一次；可在小号帐号页关闭自动续期，也可在此立即检查",
                     ),
                     SettingEntry(
                         SettingId.BorrowClear,
@@ -383,6 +383,12 @@ class SettingsRenderer(
                         "常驻评论按钮",
                         if (prefs.playerPersistentCommentsButtonEnabled) "开" else "关",
                         "播放菜单隐藏时，在屏幕左下角显示评论入口",
+                    ),
+                    SettingEntry(
+                        SettingId.PlayerPersistentQuickSpeedButtonEnabled,
+                        "常驻快速倍速按钮",
+                        if (prefs.playerPersistentQuickSpeedButtonEnabled) "开" else "关",
+                        "播放菜单隐藏时，在评论按钮右侧显示快速倍速开关",
                     ),
                     SettingEntry(
                         SettingId.PlayerHoldSeekSpeed,
@@ -664,6 +670,8 @@ class SettingsRenderer(
         val st = BorrowAccountStore.state()
         return when {
             !st.configured -> "未配置"
+            !st.autoRefreshEnabled ->
+                if (st.refreshStatus.isNotBlank()) "已关闭 · ${st.refreshStatus}" else "已关闭"
             !st.canAutoRefresh -> "缺少 bili_jct / ac_time_value"
             st.refreshStatus.isNotBlank() -> st.refreshStatus
             else -> "已就绪（每日检查）"

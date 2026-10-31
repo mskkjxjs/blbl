@@ -21,7 +21,7 @@ android {
         minSdk = 21
         targetSdk = 36
         versionCode = (project.findProperty("versionCode") as String?)?.toInt() ?: 1
-        versionName = project.findProperty("versionName") as String? ?: "0.2.3"
+        versionName = project.findProperty("versionName") as String? ?: "0.2.5"
 
         vectorDrawables {
             useSupportLibrary = true

@@ -1219,6 +1219,11 @@ class SettingsInteractionHandler(
                 renderer.refreshSection(entry.id)
             }
 
+            SettingId.PlayerPersistentQuickSpeedButtonEnabled -> {
+                prefs.playerPersistentQuickSpeedButtonEnabled = !prefs.playerPersistentQuickSpeedButtonEnabled
+                renderer.refreshSection(entry.id)
+            }
+
             SettingId.PlayerHoldSeekSpeed -> {
                 val options = listOf(1.5f, 2.0f, 3.0f, 4.0f)
                 showChoiceDialog(
@@ -1707,6 +1712,7 @@ class SettingsInteractionHandler(
                 blbl.cat3399.core.prefs.AppPrefs.PLAYER_OSD_BTN_SUBTITLE to "字幕",
                 blbl.cat3399.core.prefs.AppPrefs.PLAYER_OSD_BTN_DANMAKU to "弹幕",
                 blbl.cat3399.core.prefs.AppPrefs.PLAYER_OSD_BTN_COMMENTS to "评论",
+                blbl.cat3399.core.prefs.AppPrefs.PLAYER_OSD_BTN_QUICK_SPEED to "快速倍速",
                 blbl.cat3399.core.prefs.AppPrefs.PLAYER_OSD_BTN_DETAIL to "视频详情页",
                 blbl.cat3399.core.prefs.AppPrefs.PLAYER_OSD_BTN_UP to "UP主",
                 blbl.cat3399.core.prefs.AppPrefs.PLAYER_OSD_BTN_LIKE to "点赞",

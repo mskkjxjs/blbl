@@ -270,6 +270,7 @@ object SettingsText {
                 if (enabled.contains(blbl.cat3399.core.prefs.AppPrefs.PLAYER_OSD_BTN_SUBTITLE)) add("字幕")
                 if (enabled.contains(blbl.cat3399.core.prefs.AppPrefs.PLAYER_OSD_BTN_DANMAKU)) add("弹幕")
                 if (enabled.contains(blbl.cat3399.core.prefs.AppPrefs.PLAYER_OSD_BTN_COMMENTS)) add("评论")
+                if (enabled.contains(blbl.cat3399.core.prefs.AppPrefs.PLAYER_OSD_BTN_QUICK_SPEED)) add("快速倍速")
                 if (enabled.contains(blbl.cat3399.core.prefs.AppPrefs.PLAYER_OSD_BTN_DETAIL)) add("视频详情页")
                 if (enabled.contains(blbl.cat3399.core.prefs.AppPrefs.PLAYER_OSD_BTN_UP)) add("UP主")
                 if (enabled.contains(blbl.cat3399.core.prefs.AppPrefs.PLAYER_OSD_BTN_LIKE)) add("点赞")

@@ -168,6 +168,8 @@ class PlayerActivity : BaseActivity() {
     private var finishOnBackKeyUp: Boolean = false
     internal var holdPrevSpeed: Float = 1.0f
     internal var holdPrevPlayWhenReady: Boolean = false
+    internal var quickSpeedActive: Boolean = false
+    internal var quickSpeedRestoreSpeed: Float = 1.0f
     internal var holdScrubPreviewPosMs: Long? = null
     internal var keySeekPreviewPosMs: Long? = null
     internal val bufferingOverlayController: PlayerBufferingOverlayController by lazy {
@@ -1423,6 +1425,7 @@ class PlayerActivity : BaseActivity() {
         PlayerOsdSizing.applyTheme(this)
         PlayerUiMode.applyVideo(this, binding)
         applyOsdButtonsVisibility()
+        updateQuickSpeedUi()
         // Defensive: ensure back stays non-focusable after any theme/UI refresh.
         binding.btnBack.isFocusable = false
         binding.btnBack.isFocusableInTouchMode = false
@@ -2104,6 +2107,10 @@ class PlayerActivity : BaseActivity() {
 
         binding.btnComments.setOnClickListener {
             toggleCommentsPanel()
+        }
+
+        binding.btnQuickSpeed.setOnClickListener {
+            toggleQuickSpeed()
         }
 
         binding.btnDetail.setOnClickListener {

@@ -28,6 +28,7 @@ internal fun PlayerActivity.applyOsdButtonsVisibility() {
     binding.btnSubtitle.visibility = if (subtitleSupported && enabled.contains(AppPrefs.PLAYER_OSD_BTN_SUBTITLE)) View.VISIBLE else View.GONE
     binding.btnDanmaku.visibility = if (enabled.contains(AppPrefs.PLAYER_OSD_BTN_DANMAKU)) View.VISIBLE else View.GONE
     binding.btnComments.visibility = if (enabled.contains(AppPrefs.PLAYER_OSD_BTN_COMMENTS)) View.VISIBLE else View.GONE
+    binding.btnQuickSpeed.visibility = if (enabled.contains(AppPrefs.PLAYER_OSD_BTN_QUICK_SPEED)) View.VISIBLE else View.GONE
     binding.btnDetail.visibility = if (enabled.contains(AppPrefs.PLAYER_OSD_BTN_DETAIL)) View.VISIBLE else View.GONE
     binding.btnUp.visibility = if (enabled.contains(AppPrefs.PLAYER_OSD_BTN_UP)) View.VISIBLE else View.GONE
     binding.btnLike.visibility = if (enabled.contains(AppPrefs.PLAYER_OSD_BTN_LIKE)) View.VISIBLE else View.GONE
@@ -53,6 +54,7 @@ internal fun PlayerActivity.updateActionButtonsUi() {
     updateLikeButtonUi()
     updateCoinButtonUi()
     updateFavButtonUi()
+    updateQuickSpeedButtonUi()
     updatePlayerInfoActionUi()
 }
 

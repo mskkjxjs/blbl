@@ -229,7 +229,7 @@ private fun PlayerActivity.applyPlayerCustomShortcut(keyCode: Int, action: Playe
                 value = next.coerceIn(0.25f, 4.0f),
                 updateSession = { copy(playbackSpeed = it) },
                 syncToGlobal = { playerSpeed = it },
-                afterApplied = { player?.setPlaybackSpeed(it) },
+                afterApplied = { applyManualPlaybackSpeed(it) },
             )
             showSeekHint("播放速度：${String.format(Locale.US, "%.2fx", next)}", hold = false)
         }

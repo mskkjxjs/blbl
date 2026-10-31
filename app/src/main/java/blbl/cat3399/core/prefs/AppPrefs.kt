@@ -489,6 +489,10 @@ class AppPrefs(context: Context) {
         get() = prefs.getBoolean(KEY_PLAYER_PERSISTENT_COMMENTS_BUTTON_ENABLED, true)
         set(value) = prefs.edit().putBoolean(KEY_PLAYER_PERSISTENT_COMMENTS_BUTTON_ENABLED, value).apply()
 
+    var playerPersistentQuickSpeedButtonEnabled: Boolean
+        get() = prefs.getBoolean(KEY_PLAYER_PERSISTENT_QUICK_SPEED_BUTTON_ENABLED, true)
+        set(value) = prefs.edit().putBoolean(KEY_PLAYER_PERSISTENT_QUICK_SPEED_BUTTON_ENABLED, value).apply()
+
     var playerCommentsDoubleTapEnabled: Boolean
         get() = prefs.getBoolean(KEY_PLAYER_COMMENTS_DOUBLE_TAP_ENABLED, true)
         set(value) = prefs.edit().putBoolean(KEY_PLAYER_COMMENTS_DOUBLE_TAP_ENABLED, value).apply()
@@ -872,12 +876,16 @@ class AppPrefs(context: Context) {
             if (!prefs.contains(KEY_PLAYER_OSD_BUTTONS)) return DEFAULT_PLAYER_OSD_BUTTONS
             val stored = loadStringList(KEY_PLAYER_OSD_BUTTONS)
             val normalized = normalizePlayerOsdButtons(stored)
-            return migratePlayerOsdDetailButtonIfNeeded(normalized)
+            val withDetail = migratePlayerOsdDetailButtonIfNeeded(normalized)
+            return migratePlayerOsdQuickSpeedButtonIfNeeded(withDetail)
         }
         set(value) {
             saveStringList(KEY_PLAYER_OSD_BUTTONS, normalizePlayerOsdButtons(value))
             // Once user manually configures OSD buttons, never force-enable new buttons again.
-            prefs.edit().putBoolean(KEY_PLAYER_OSD_BUTTONS_DETAIL_MIGRATED, true).apply()
+            prefs.edit()
+                .putBoolean(KEY_PLAYER_OSD_BUTTONS_DETAIL_MIGRATED, true)
+                .putBoolean(KEY_PLAYER_OSD_BUTTONS_QUICK_SPEED_MIGRATED, true)
+                .apply()
         }
 
     internal var playerCustomShortcuts: List<PlayerCustomShortcut>
@@ -1040,6 +1048,22 @@ class AppPrefs(context: Context) {
         return migrated
     }
 
+    private fun migratePlayerOsdQuickSpeedButtonIfNeeded(normalized: List<String>): List<String> {
+        if (prefs.getBoolean(KEY_PLAYER_OSD_BUTTONS_QUICK_SPEED_MIGRATED, false)) return normalized
+        prefs.edit().putBoolean(KEY_PLAYER_OSD_BUTTONS_QUICK_SPEED_MIGRATED, true).apply()
+        if (normalized.contains(PLAYER_OSD_BTN_QUICK_SPEED)) return normalized
+
+        val commentsIndex = normalized.indexOf(PLAYER_OSD_BTN_COMMENTS)
+        val migrated =
+            if (commentsIndex >= 0) {
+                normalized.toMutableList().apply { add(commentsIndex + 1, PLAYER_OSD_BTN_QUICK_SPEED) }
+            } else {
+                normalized + PLAYER_OSD_BTN_QUICK_SPEED
+            }
+        saveStringList(KEY_PLAYER_OSD_BUTTONS, migrated)
+        return migrated
+    }
+
     private fun normalizePlayerOsdButtons(value: List<String>): List<String> {
         val out = ArrayList<String>(value.size + 1)
         val seen = HashSet<String>(value.size + 1)
@@ -1171,6 +1195,7 @@ class AppPrefs(context: Context) {
         private const val KEY_PLAYER_SHORT_SEEK_STEP_SECONDS = "player_short_seek_step_seconds"
         private const val KEY_PLAYER_DOUBLE_TAP_PAUSE_ENABLED = "player_double_tap_pause_enabled"
         private const val KEY_PLAYER_PERSISTENT_COMMENTS_BUTTON_ENABLED = "player_persistent_comments_button_enabled"
+        private const val KEY_PLAYER_PERSISTENT_QUICK_SPEED_BUTTON_ENABLED = "player_persistent_quick_speed_button_enabled"
         private const val KEY_PLAYER_COMMENTS_DOUBLE_TAP_ENABLED = "player_comments_double_tap_enabled"
         private const val KEY_PLAYER_COMMENTS_LONG_PRESS_ENABLED = "player_comments_long_press_enabled"
         private const val KEY_PLAYER_COMMENTS_SWIPE_ENABLED = "player_comments_swipe_enabled"
@@ -1208,6 +1233,7 @@ class AppPrefs(context: Context) {
         private const val KEY_PLAYER_UP_QUICK_CARD_ENABLED = "player_up_quick_card_enabled"
         private const val KEY_PLAYER_OSD_BUTTONS = "player_osd_buttons"
         private const val KEY_PLAYER_OSD_BUTTONS_DETAIL_MIGRATED = "player_osd_buttons_detail_migrated"
+        private const val KEY_PLAYER_OSD_BUTTONS_QUICK_SPEED_MIGRATED = "player_osd_buttons_quick_speed_migrated"
         private const val KEY_PLAYER_CUSTOM_SHORTCUTS = "player_custom_shortcuts"
         private const val KEY_GRID_SPAN = "grid_span"
         private const val KEY_DYNAMIC_GRID_SPAN = "dynamic_grid_span"
@@ -1283,6 +1309,7 @@ class AppPrefs(context: Context) {
                 KEY_PLAYER_SHORT_SEEK_STEP_SECONDS,
                 KEY_PLAYER_DOUBLE_TAP_PAUSE_ENABLED,
                 KEY_PLAYER_PERSISTENT_COMMENTS_BUTTON_ENABLED,
+                KEY_PLAYER_PERSISTENT_QUICK_SPEED_BUTTON_ENABLED,
                 KEY_PLAYER_COMMENTS_DOUBLE_TAP_ENABLED,
                 KEY_PLAYER_COMMENTS_LONG_PRESS_ENABLED,
                 KEY_PLAYER_COMMENTS_SWIPE_ENABLED,
@@ -1468,6 +1495,7 @@ class AppPrefs(context: Context) {
         const val PLAYER_OSD_BTN_SUBTITLE = "subtitle"
         const val PLAYER_OSD_BTN_DANMAKU = "danmaku"
         const val PLAYER_OSD_BTN_COMMENTS = "comments"
+        const val PLAYER_OSD_BTN_QUICK_SPEED = "quick_speed"
         const val PLAYER_OSD_BTN_DETAIL = "detail"
         const val PLAYER_OSD_BTN_UP = "up"
         const val PLAYER_OSD_BTN_LIKE = "like"
@@ -1485,6 +1513,7 @@ class AppPrefs(context: Context) {
                 PLAYER_OSD_BTN_SUBTITLE,
                 PLAYER_OSD_BTN_DANMAKU,
                 PLAYER_OSD_BTN_COMMENTS,
+                PLAYER_OSD_BTN_QUICK_SPEED,
                 PLAYER_OSD_BTN_DETAIL,
                 PLAYER_OSD_BTN_SPONSOR_SUBMIT,
                 PLAYER_OSD_BTN_UP,
@@ -1501,6 +1530,7 @@ class AppPrefs(context: Context) {
                 PLAYER_OSD_BTN_SUBTITLE,
                 PLAYER_OSD_BTN_DANMAKU,
                 PLAYER_OSD_BTN_COMMENTS,
+                PLAYER_OSD_BTN_QUICK_SPEED,
                 PLAYER_OSD_BTN_DETAIL,
                 PLAYER_OSD_BTN_UP,
                 PLAYER_OSD_BTN_LIKE,

@@ -58,6 +58,7 @@ enum class SettingId(
     PlayerShortSeekStepSeconds("player_short_seek_step_seconds"),
     PlayerDoubleTapPauseEnabled("player_double_tap_pause_enabled"),
     PlayerPersistentCommentsButtonEnabled("player_persistent_comments_button_enabled"),
+    PlayerPersistentQuickSpeedButtonEnabled("player_persistent_quick_speed_button_enabled"),
     PlayerHoldSeekSpeed("player_hold_seek_speed"),
     PlayerBoostHintEnabled("player_boost_hint_enabled"),
     PlayerHoldSeekMode("player_hold_seek_mode"),

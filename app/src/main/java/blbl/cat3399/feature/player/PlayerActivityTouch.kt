@@ -9,6 +9,7 @@ import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import blbl.cat3399.R
@@ -114,10 +115,13 @@ internal interface PlayerTouchGestureHost {
         get() = null
     val commentsDelegate: PlayerTouchCommentsDelegate?
         get() = null
+    val quickSpeedActive: Boolean
+        get() = false
 
     fun setControlsVisibleFromTouch(visible: Boolean)
     fun closeSidePanelFromTouch(): Boolean
     fun togglePlayPauseFromTouch()
+    fun toggleQuickSpeedFromTouch() {}
     fun noteUserInteractionFromTouch()
     fun showTouchHint(text: String, hold: Boolean)
     fun scheduleHideTouchHint()
@@ -172,6 +176,8 @@ private class VodPlayerTouchHost(
         get() = this
     override val commentsDelegate: PlayerTouchCommentsDelegate
         get() = this
+    override val quickSpeedActive: Boolean
+        get() = playerActivity.quickSpeedActive
 
     override var tapSeekActiveDirection: Int
         get() = playerActivity.tapSeekActiveDirection
@@ -196,6 +202,10 @@ private class VodPlayerTouchHost(
 
     override fun togglePlayPauseFromTouch() {
         binding.btnPlayPause.performClick()
+    }
+
+    override fun toggleQuickSpeedFromTouch() {
+        playerActivity.toggleQuickSpeed()
     }
 
     override fun smartSeekFromTouch(direction: Int) {
@@ -448,6 +458,9 @@ internal class PlayerTouchController(
         overlayBinding.btnTouchComments.setOnClickListener {
             host.commentsDelegate?.toggleCommentsPanelFromTouch()
         }
+        overlayBinding.btnTouchQuickSpeed.setOnClickListener {
+            host.toggleQuickSpeedFromTouch()
+        }
         updateLockUi()
     }
 
@@ -480,6 +493,8 @@ internal class PlayerTouchController(
         overlayBinding.btnTouchLock.visibility = View.GONE
         overlayBinding.btnTouchComments.setOnClickListener(null)
         overlayBinding.btnTouchComments.visibility = View.GONE
+        overlayBinding.btnTouchQuickSpeed.setOnClickListener(null)
+        overlayBinding.btnTouchQuickSpeed.visibility = View.GONE
         overlayBinding.root.visibility = View.GONE
     }
 
@@ -900,6 +915,32 @@ internal class PlayerTouchController(
                 if (touchLocked) R.string.player_touch_unlock else R.string.player_touch_lock,
             )
         updatePersistentCommentsButton()
+        updatePersistentQuickSpeedButton()
+    }
+
+    fun refreshQuickSpeedButton() {
+        updatePersistentQuickSpeedButton()
+    }
+
+    private fun updatePersistentQuickSpeedButton() {
+        val visible =
+            BiliClient.prefs.playerPersistentQuickSpeedButtonEnabled &&
+                !touchLocked &&
+                !host.controlsVisibleForTouch &&
+                !host.isBottomCardPanelVisible &&
+                !host.isCommentImageViewerVisible &&
+                !host.isSponsorSubmitPanelVisible &&
+                !host.isSidePanelVisible
+        overlayBinding.btnTouchQuickSpeed.visibility = if (visible) View.VISIBLE else View.GONE
+        overlayBinding.btnTouchQuickSpeed.imageTintList =
+            ContextCompat.getColorStateList(
+                activity,
+                if (host.quickSpeedActive) R.color.blbl_blue else R.color.player_button_tint,
+            )
+        overlayBinding.btnTouchQuickSpeed.contentDescription =
+            activity.getString(
+                if (host.quickSpeedActive) R.string.player_quick_speed_turn_off else R.string.player_quick_speed_turn_on,
+            )
     }
 
     private fun updatePersistentCommentsButton() {
