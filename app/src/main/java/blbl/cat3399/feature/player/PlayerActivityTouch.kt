@@ -205,7 +205,7 @@ private class VodPlayerTouchHost(
     }
 
     override fun toggleQuickSpeedFromTouch() {
-        playerActivity.toggleQuickSpeed()
+        playerActivity.toggleQuickSpeed(showHint = false)
     }
 
     override fun smartSeekFromTouch(direction: Int) {

@@ -27,7 +27,6 @@ import blbl.cat3399.core.io.DocumentExporter
 import blbl.cat3399.core.log.AppLog
 import blbl.cat3399.core.log.LogExporter
 import blbl.cat3399.core.net.BiliClient
-import blbl.cat3399.core.net.BorrowAccountRefresher
 import blbl.cat3399.core.net.BorrowAccountStore
 import blbl.cat3399.core.prefs.AppConfigBackup
 import blbl.cat3399.core.prefs.AppPrefs
@@ -98,7 +97,6 @@ class SettingsInteractionHandler(
     private var clearCacheJob: Job? = null
     private var cacheSizeJob: Job? = null
     private var configTransferJob: Job? = null
-    private var borrowRefreshJob: Job? = null
     private var pendingDocumentExport: ((Uri) -> Unit)? = null
 
     fun onSectionShown(sectionName: String) {
@@ -138,29 +136,6 @@ class SettingsInteractionHandler(
         }
         AppToast.show(activity, if (next) "已启用小号取流" else "已停用小号取流")
         renderer.refreshSection(SettingId.BorrowEnabled)
-    }
-
-    private fun refreshBorrowAccountNow() {
-        val st = BorrowAccountStore.state()
-        if (!st.configured) {
-            AppToast.show(activity, "请先配置小号凭证")
-            return
-        }
-        if (!st.canAutoRefresh) {
-            AppToast.show(activity, "缺少 bili_jct 或 ac_time_value，无法自动续期")
-            return
-        }
-        if (borrowRefreshJob?.isActive == true) {
-            AppToast.show(activity, "正在检查…")
-            return
-        }
-        AppToast.show(activity, "正在检查续期状态…")
-        borrowRefreshJob =
-            activity.lifecycleScope.launch {
-                val result = BorrowAccountRefresher.refreshIfNeeded(force = true)
-                AppToast.show(activity, result.message)
-                renderer.refreshSection(SettingId.BorrowRefresh)
-            }
     }
 
     private fun confirmClearBorrowAccount() {
@@ -673,7 +648,7 @@ class SettingsInteractionHandler(
             SettingId.GaiaVgate -> showGaiaVgateDialog(state.currentSectionIndex, entry.id)
             SettingId.BorrowAccount -> borrowAccountLauncher.launch(Intent(activity, BorrowAccountActivity::class.java))
             SettingId.BorrowEnabled -> toggleBorrowEnabled()
-            SettingId.BorrowRefresh -> refreshBorrowAccountNow()
+            SettingId.BorrowRefresh -> AppToast.show(activity, "如需立即续期，请进入“小号帐号”页手动操作")
             SettingId.BorrowClear -> confirmClearBorrowAccount()
             SettingId.ClearCache -> showClearCacheDialog(state.currentSectionIndex, entry.id)
             SettingId.ConfigTransfer -> showConfigTransferDialog()

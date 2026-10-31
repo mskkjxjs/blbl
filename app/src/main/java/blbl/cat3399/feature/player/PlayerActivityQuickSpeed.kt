@@ -10,11 +10,14 @@ internal fun PlayerActivity.quickSpeedSubtitle(): String {
     return if (quickSpeedActive) "已开启 · ${holdText}x" else "已关闭（长按 ${holdText}x）"
 }
 
-internal fun PlayerActivity.toggleQuickSpeed() {
-    setQuickSpeedEnabled(!quickSpeedActive)
+internal fun PlayerActivity.toggleQuickSpeed(showHint: Boolean = true) {
+    setQuickSpeedEnabled(!quickSpeedActive, showHint)
 }
 
-internal fun PlayerActivity.setQuickSpeedEnabled(enabled: Boolean) {
+internal fun PlayerActivity.setQuickSpeedEnabled(
+    enabled: Boolean,
+    showHint: Boolean = true,
+) {
     if (enabled == quickSpeedActive) return
     val target: Float
     if (enabled) {
@@ -34,14 +37,16 @@ internal fun PlayerActivity.setQuickSpeedEnabled(enabled: Boolean) {
         afterApplied = { speed ->
             quickSpeedActive = enabled
             player?.setPlaybackSpeed(speed)
-            showSeekHint(
-                if (enabled) {
-                    "快速倍速 ${holdSeekSpeedText(speed)}x"
-                } else {
-                    "恢复 ${String.format(Locale.US, "%.2fx", speed)}"
-                },
-                hold = false,
-            )
+            if (showHint) {
+                showSeekHint(
+                    if (enabled) {
+                        "快速倍速 ${holdSeekSpeedText(speed)}x"
+                    } else {
+                        "恢复 ${String.format(Locale.US, "%.2fx", speed)}"
+                    },
+                    hold = false,
+                )
+            }
             updateQuickSpeedUi()
         },
     )

@@ -255,7 +255,7 @@ class SettingsRenderer(
                         SettingId.BorrowRefresh,
                         "续期状态",
                         borrowAccountRefreshText(),
-                        "凭证每日自动检查一次；可在小号帐号页关闭自动续期，也可在此立即检查",
+                        "仅显示上次检查结果；如需立即续期，请进入“小号帐号”页点击手动续期",
                     ),
                     SettingEntry(
                         SettingId.BorrowClear,

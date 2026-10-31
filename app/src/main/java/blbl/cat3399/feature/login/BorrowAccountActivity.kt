@@ -6,6 +6,7 @@ import android.view.KeyEvent
 import androidx.lifecycle.lifecycleScope
 import blbl.cat3399.core.log.AppLog
 import blbl.cat3399.core.net.BiliClient
+import blbl.cat3399.core.net.BorrowAccountRefresher
 import blbl.cat3399.core.net.BorrowAccountStore
 import blbl.cat3399.core.net.BorrowWebClient
 import blbl.cat3399.core.ui.AppToast
@@ -33,6 +34,7 @@ class BorrowAccountActivity : BaseActivity() {
     private lateinit var binding: ActivityBorrowAccountBinding
     private var pollJob: Job? = null
     private var saveJob: Job? = null
+    private var refreshJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +44,7 @@ class BorrowAccountActivity : BaseActivity() {
 
         binding.btnQr.setOnClickListener { startWebQrFlow() }
         binding.btnSave.setOnClickListener { saveFromFields() }
+        binding.btnRefresh.setOnClickListener { refreshNow() }
         binding.btnBack.setOnClickListener { finish() }
 
         prefillFields()
@@ -79,6 +82,7 @@ class BorrowAccountActivity : BaseActivity() {
     override fun onDestroy() {
         pollJob?.cancel()
         saveJob?.cancel()
+        refreshJob?.cancel()
         super.onDestroy()
     }
 
@@ -164,6 +168,32 @@ class BorrowAccountActivity : BaseActivity() {
                     )
                 } finally {
                     binding.btnSave.isEnabled = true
+                }
+            }
+    }
+
+    private fun refreshNow() {
+        if (refreshJob?.isActive == true) return
+        val st = BorrowAccountStore.state()
+        if (!st.configured) {
+            AppToast.show(this, "请先保存小号凭证")
+            return
+        }
+        if (!st.canAutoRefresh) {
+            AppToast.show(this, "缺少 bili_jct 或 ac_time_value，无法续期")
+            return
+        }
+        refreshJob =
+            lifecycleScope.launch {
+                binding.btnRefresh.isEnabled = false
+                binding.tvStatus.text = "正在检查续期状态…"
+                try {
+                    val result = BorrowAccountRefresher.refreshIfNeeded(force = true)
+                    AppToast.show(this@BorrowAccountActivity, result.message)
+                    if (result.refreshed) prefillFields()
+                } finally {
+                    binding.btnRefresh.isEnabled = true
+                    renderState()
                 }
             }
     }

@@ -2110,7 +2110,7 @@ class PlayerActivity : BaseActivity() {
         }
 
         binding.btnQuickSpeed.setOnClickListener {
-            toggleQuickSpeed()
+            toggleQuickSpeed(showHint = false)
         }
 
         binding.btnDetail.setOnClickListener {
